@@ -1,0 +1,21 @@
+# Visual Studio
+**/.vs/
+**/bin/
+**/obj/
+**/*.user
+**/*.suo
+*.suo
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env*.local
+
+# Base de datos
+*.mdf
+*.ldf
+
+# Sistema
+.DS_Store
+Thumbs.db
