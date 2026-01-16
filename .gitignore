@@ -19,3 +19,5 @@ frontend/.env*.local
 # Sistema
 .DS_Store
 Thumbs.db
+
+scriptSQL.sql
