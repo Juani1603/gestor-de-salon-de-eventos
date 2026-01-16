@@ -1,3 +1,5 @@
+using AccesoDatos.EntityFramework;
+using Microsoft.EntityFrameworkCore;
 
 namespace SalonEventos.API
 {
@@ -7,25 +9,26 @@ namespace SalonEventos.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // Configuración de Base de datos
+            builder.Services.AddDbContext<Context>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Negocio")));
 
+            // Servicios
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // Middleware
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
+            app.UseHttpsRedirection(); 
             app.UseAuthorization();
-
-
             app.MapControllers();
 
             app.Run();

@@ -1,0 +1,41 @@
+﻿using LogicaDeNegocio.Entidades;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AccesoDatos.EntityFramework
+{
+    
+    public class Context : DbContext
+    {
+        public DbSet<Cotizacion> Cotizaciones { get; set; }
+        public DbSet<Evento> Eventos { get; set; }
+        public DbSet<Planificacion> Planificaciones { get; set; }
+        public DbSet<ServicioEvento> ServiciosEventos { get; set; }
+        public DbSet<TimingEvento> TimingEventos { get; set; }
+
+        public Context(DbContextOptions<Context> options) : base(options) { }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Cotizacion>().ToTable("Cotizacion");
+            modelBuilder.Entity<Evento>().ToTable("Evento");
+            modelBuilder.Entity<Planificacion>().ToTable("Planificacion");
+            modelBuilder.Entity<ServicioEvento>().ToTable("ServicioEvento");
+            modelBuilder.Entity<TimingEvento>().ToTable("TimingEvento");
+
+            modelBuilder.Entity<Cotizacion>()
+                .Property(c => c.PrecioPorInvitado)
+                .HasColumnType("decimal(10,2)");
+
+            modelBuilder.Entity<Evento>()
+                .Property(e => e.PrecioPorInvitado)
+                .HasColumnType("decimal(10,2)");
+        }
+    }
+}
