@@ -16,6 +16,7 @@ namespace AccesoDatos.EntityFramework
         public DbSet<Planificacion> Planificaciones { get; set; }
         public DbSet<ServicioEvento> ServiciosEventos { get; set; }
         public DbSet<TimingEvento> TimingEventos { get; set; }
+        public DbSet<Reunion> Reuniones { get; set; }
 
         public Context(DbContextOptions<Context> options) : base(options) { }
 
@@ -28,6 +29,7 @@ namespace AccesoDatos.EntityFramework
             modelBuilder.Entity<Planificacion>().ToTable("Planificacion");
             modelBuilder.Entity<ServicioEvento>().ToTable("ServicioEvento");
             modelBuilder.Entity<TimingEvento>().ToTable("TimingEvento");
+            modelBuilder.Entity<Reunion>().ToTable("Reunion");
 
             modelBuilder.Entity<Cotizacion>()
                 .Property(c => c.PrecioPorInvitado)

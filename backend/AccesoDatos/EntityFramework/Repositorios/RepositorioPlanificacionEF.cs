@@ -19,6 +19,7 @@ namespace AccesoDatos.EntityFramework.Repositorios
         }
         public void Add(Planificacion obj)
         {
+            obj.Validar();
             _context.Planificaciones.Add(obj);
             _context.SaveChanges();
         }

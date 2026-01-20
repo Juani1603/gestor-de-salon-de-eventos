@@ -19,6 +19,7 @@ namespace AccesoDatos.EntityFramework.Repositorios
 
         public void Add(ServicioEvento obj)
         {
+            obj.Validar();
             _context.ServiciosEventos.Add(obj);
             _context.SaveChanges();
         }
