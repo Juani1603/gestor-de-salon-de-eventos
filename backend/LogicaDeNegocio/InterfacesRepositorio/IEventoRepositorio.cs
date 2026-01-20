@@ -9,5 +9,8 @@ namespace LogicaDeNegocio.InterfacesRepositorio
 {
     public interface IEventoRepositorio : IRepositorio<Evento>
     {
+        Evento? ObtenerEventoProximo();
+        IEnumerable<Evento> ObtenerEventosDelMes(int mes, int anio);
+        IEnumerable<Evento> ObtenerEventosPorRango(DateTime fechaInicio, DateTime fechaFin);
     }
 }
