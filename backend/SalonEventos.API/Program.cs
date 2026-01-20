@@ -18,6 +18,16 @@ namespace SalonEventos.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:3000")  // URL del frontend 
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             var app = builder.Build();
 
             // Middleware
@@ -27,6 +37,7 @@ namespace SalonEventos.API
                 app.UseSwaggerUI();
             }
 
+            app.UseCors("AllowFrontend");   
             app.UseHttpsRedirection(); 
             app.UseAuthorization();
             app.MapControllers();

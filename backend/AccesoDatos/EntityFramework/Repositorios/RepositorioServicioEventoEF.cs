@@ -1,4 +1,5 @@
 ﻿using LogicaDeNegocio.Entidades;
+using LogicaDeNegocio.Exceptions;
 using LogicaDeNegocio.InterfacesRepositorio;
 using System;
 using System.Collections.Generic;
@@ -10,29 +11,46 @@ namespace AccesoDatos.EntityFramework.Repositorios
 {
     public class RepositorioServicioEventoEF : IServicioEventoRepositorio
     {
+        private Context _context;
+        public RepositorioServicioEventoEF(Context context)
+        {
+            _context = context;
+        }
+
         public void Add(ServicioEvento obj)
         {
-            throw new NotImplementedException();
+            _context.ServiciosEventos.Add(obj);
+            _context.SaveChanges();
         }
 
         public IEnumerable<ServicioEvento> FindAll()
         {
-            throw new NotImplementedException();
+            return _context.ServiciosEventos;
         }
 
         public ServicioEvento FindById(int id)
         {
-            throw new NotImplementedException();
+            ServicioEvento servicioEvento = _context.ServiciosEventos
+                                            .Where(se => se.Id == id)
+                                            .FirstOrDefault();
+            if (servicioEvento == null)
+            {
+                throw new ServicioEventoException("No se encontró un servicio de evento con ese Id");
+            }
+            return servicioEvento;
         }
 
         public void Remove(int id)
         {
-            throw new NotImplementedException();
+            ServicioEvento servicioEvento = new ServicioEvento { Id =  id };
+            _context.ServiciosEventos.Remove(servicioEvento);
+            _context.SaveChanges();
         }
 
         public void Update(ServicioEvento obj)
         {
-            throw new NotImplementedException();
+            _context.ServiciosEventos.Update(obj);
+            _context.SaveChanges();
         }
     }
 }

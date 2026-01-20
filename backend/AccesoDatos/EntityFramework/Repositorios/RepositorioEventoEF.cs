@@ -1,4 +1,5 @@
 ﻿using LogicaDeNegocio.Entidades;
+using LogicaDeNegocio.Exceptions;
 using LogicaDeNegocio.InterfacesRepositorio;
 using System;
 using System.Collections.Generic;
@@ -17,27 +18,39 @@ namespace AccesoDatos.EntityFramework.Repositorios
         }
         public void Add(Evento obj)
         {
-            throw new NotImplementedException();
+            _context.Eventos.Add(obj);
+            _context.SaveChanges();
         }
 
         public IEnumerable<Evento> FindAll()
         {
-            throw new NotImplementedException();
+            return _context.Eventos;
         }
 
         public Evento FindById(int id)
         {
-            throw new NotImplementedException();
+            Evento evento = _context.Eventos
+                            .Where(e => e.Id == id).FirstOrDefault();
+
+            if (evento == null)
+            {
+                throw new EventoException("No se encontró un evento con ese Id");
+            }
+
+            return evento;
         }
 
         public void Remove(int id)
         {
-            throw new NotImplementedException();
+            Evento evento = new Evento { Id = id };
+            _context.Eventos.Remove(evento);
+            _context.SaveChanges();
         }
 
         public void Update(Evento obj)
         {
-            throw new NotImplementedException();
+            _context.Eventos.Update(obj);
+            _context.SaveChanges();
         }
         public Evento? ObtenerEventoProximo()
         {
