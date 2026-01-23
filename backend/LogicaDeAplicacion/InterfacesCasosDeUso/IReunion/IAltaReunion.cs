@@ -1,0 +1,14 @@
+﻿using LogicaDeNegocio.Entidades;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace LogicaDeAplicacion.InterfacesCasosDeUso.IReunion
+{
+    public interface IAltaReunion
+    {
+        void AltaReunion(Reunion reunion);
+    }
+}

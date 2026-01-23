@@ -34,7 +34,7 @@ namespace AccesoDatos.EntityFramework.Repositorios
                               .Where(r => r.Id == id)
                               .FirstOrDefault();
 
-            if (reunion != null)
+            if (reunion == null)
             {
                 throw new ReunionException("No se encontró una reunión con ese Id");
             }
@@ -52,6 +52,35 @@ namespace AccesoDatos.EntityFramework.Repositorios
         {
             _context.Reuniones.Update(obj);
             _context.SaveChanges();
+        }
+
+        public Reunion ObtenerReunionProxima()
+        {
+            Reunion reunion = _context.Reuniones
+                .Where(r => r.FechaHora > DateTime.Now)
+                .OrderBy(r => r.FechaHora)
+                .FirstOrDefault();
+
+            if (reunion == null)
+            {
+                throw new ReunionException("No hay ninguna reunión próxima");
+            }
+
+            return reunion;
+        }
+
+        public IEnumerable<Reunion> ObtenerReunionesDelMes(int mes, int anio)
+        {
+            return _context.Reuniones
+                   .Where(r => r.FechaHora.Month == mes && r.FechaHora.Year == anio)
+                   .ToList();
+        }
+
+        public IEnumerable<Reunion> ObtenerReunionesPorFecha(DateTime fechaReunion)
+        {
+            return _context.Reuniones
+                    .Where(r => r.FechaHora.Date == fechaReunion)
+                    .ToList();
         }
     }
 }

@@ -5,12 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LogicaDeNegocio.InterfacesRepositorio
+namespace LogicaDeAplicacion.InterfacesCasosDeUso.IEvento
 {
-    public interface IEventoRepositorio : IRepositorio<Evento>
+    public interface IObtenerEventosEntreFechas
     {
-        Evento? ObtenerEventoProximo();
-        IEnumerable<Evento> ObtenerEventosDelMes(int mes, int anio);
         IEnumerable<Evento> ObtenerEventosEntreFechas(DateTime fechaDesde, DateTime fechaHasta);
     }
 }

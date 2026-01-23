@@ -5,12 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LogicaDeNegocio.InterfacesRepositorio
+namespace LogicaDeAplicacion.InterfacesCasosDeUso.IReunion
 {
-    public interface IReunionRepositorio : IRepositorio<Reunion>
+    public interface IObtenerReunionesDelMes
     {
-        Reunion ObtenerReunionProxima();
         IEnumerable<Reunion> ObtenerReunionesDelMes(int mes, int anio);
-        IEnumerable<Reunion> ObtenerReunionesPorFecha(DateTime fechaReunion);
     }
 }

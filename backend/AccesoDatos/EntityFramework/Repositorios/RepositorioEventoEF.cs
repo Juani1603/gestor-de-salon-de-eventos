@@ -69,10 +69,10 @@ namespace AccesoDatos.EntityFramework.Repositorios
                 .ToList();
         }
 
-        public IEnumerable<Evento> ObtenerEventosPorRango(DateTime fechaInicio, DateTime fechaFin)
+        public IEnumerable<Evento> ObtenerEventosEntreFechas(DateTime fechaDesde, DateTime fechaHasta)
         {
             return _context.Eventos
-               .Where(e => e.FechaEvento >= fechaInicio && e.FechaEvento <= fechaFin)
+               .Where(e => e.FechaEvento >= fechaDesde && e.FechaEvento <= fechaHasta)
                .OrderBy(e => e.FechaEvento)
                .ToList();
         }

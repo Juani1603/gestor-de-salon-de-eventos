@@ -9,16 +9,17 @@ using System.Threading.Tasks;
 
 namespace LogicaDeAplicacion.CasosDeUso.EventoCU
 {
-    public class ObtenerEventosDelMesCU : IObtenerEventosDelMes
+    public class ObtenerEventoPorIdCU : IObtenerEventoPorId
     {
-        public IEventoRepositorio _repositorio;
-        public ObtenerEventosDelMesCU(IEventoRepositorio repositorio)
+        private IEventoRepositorio _repositorio;
+        public ObtenerEventoPorIdCU(IEventoRepositorio repositorio)
         {
             _repositorio = repositorio;
         }
-        public IEnumerable<Evento> ObtenerEventosDelMes(int mes, int anio)
+
+        public Evento ObtenerEventoPorId(int idEvento)
         {
-            return _repositorio.ObtenerEventosDelMes(mes, anio);
+            return _repositorio.FindById(idEvento);
         }
     }
 }
