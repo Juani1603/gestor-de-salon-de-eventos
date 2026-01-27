@@ -1,87 +1,97 @@
 @import "tailwindcss";
 
+/* Variables de diseño limpias y profesionales */
 :root {
   --color-primary: #FF6B35;
   --color-primary-light: #FF8C61;
   --color-primary-dark: #E85A2B;
-  --color-dark: #1A1A1A;
-  --color-dark-light: #2D2D2D;
+  --sidebar-bg: #FFFFFF;
+  --border-color: #E8E8E8;
 }
 
 body {
-  background: linear-gradient(to bottom right, #F9FAFB, #E5E7EB, #D1D5DB);
-  color: var(--color-dark);
-  font-family: var(--font-geist-sans);
+  background: #F7F7F7;
+  color: #5A5A5A;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Glass effect para tarjetas */
-.glass-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  border-radius: 1rem;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+/* Cards limpias y profesionales */
+.card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  transition: all 200ms;
 }
 
-.glass-card-dark {
-  background: rgba(26, 26, 26, 0.8);
-  backdrop-filter: blur(12px);
-  border-radius: 1rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.card:hover {
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
 }
 
-/* Botones */
+/* Botones limpios */
 .btn-primary {
   background: var(--color-primary);
   color: white;
   font-weight: 500;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
-  transition: all 200ms;
-  box-shadow: 0 4px 14px 0 rgba(255, 107, 53, 0.39);
+  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: all 150ms;
+  border: none;
+  cursor: pointer;
 }
 
 .btn-primary:hover {
   background: var(--color-primary-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px 0 rgba(255, 107, 53, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px 0 rgba(255, 107, 53, 0.25);
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(4px);
-  color: var(--color-dark);
-  font-weight: 500;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
-  transition: all 200ms;
-  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(209, 213, 219, 0.3);
-}
-
-.btn-secondary:hover {
   background: white;
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
-}
-
-/* Sidebar items */
-.sidebar-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  transition: all 200ms;
+  color: #374151;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: all 150ms;
+  border: 1px solid var(--border-color);
   cursor: pointer;
 }
 
+.btn-secondary:hover {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+}
+
+/* Sidebar items - estilo Stripe */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: all 150ms;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6B7280;
+}
+
 .sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: #F3F4F6;
+  color: #374151;
 }
 
 .sidebar-item-active {
-  background: var(--color-primary);
-  color: white;
-  box-shadow: 0 4px 14px 0 rgba(255, 107, 53, 0.39);
+  background: #FEF3F0;
+  color: var(--color-primary);
+}
+
+/* Headers más elegantes */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #3C3C3C;
 }
