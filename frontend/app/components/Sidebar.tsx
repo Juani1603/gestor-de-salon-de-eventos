@@ -9,8 +9,8 @@ import Image from 'next/image';
 const menuItems = [
   { name: 'Dashboard', icon: Home, path: '/dashboard' },
   { name: 'Eventos', icon: Calendar, path: '/eventos' },
-  { name: 'Reuniones', icon: Users, path: '/reuniones' },
   { name: 'Cotizaciones', icon: FileText, path: '/cotizaciones' },
+  { name: 'Reuniones', icon: Users, path: '/reuniones' },
 ];
 
 export default function Sidebar() {

@@ -27,6 +27,17 @@ export interface Evento {
   linkCompartible?: string | null;
 }
 
+export interface Cotizacion {
+  id: number;
+  nombreCliente: string;
+  fechaEvento: string;
+  tipoEvento: TipoEvento;
+  cantidadInvitados: number;
+  precioPorInvitado: number;
+  fechaCreacion: string;
+  eventoId?: number | null;
+}
+
 export interface Reunion {
   id: number;
   cotizacionId: number;

@@ -46,7 +46,8 @@ namespace SalonEventos.API.Controllers
             try
             {
                 IEnumerable<Cotizacion> cotizaciones = _obtenerCotizaciones.ObtenerCotizaciones();
-                return Ok(cotizaciones);
+                return Ok(cotizaciones.OrderBy(c => c.EventoId.HasValue)
+                                       .ThenByDescending(c => c.FechaCreacion));
             }
             catch (Exception ex)
             {
