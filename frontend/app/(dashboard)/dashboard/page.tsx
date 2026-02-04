@@ -4,17 +4,20 @@ import { useEffect, useState } from 'react';
 import { eventoService } from '@/app/services/eventoService';
 import { Evento, TipoEventoLabels, EstadoEventoLabels } from '@/app/types';
 import MiniCalendar from '@/app/components/MiniCalendar';
+import { motion } from 'framer-motion';
 
 export default function DashboardPage() {
   const [eventoProximo, setEventoProximo] = useState<Evento | null>(null);
   const [eventosDelMes, setEventosDelMes] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
 
+
+
   useEffect(() => {
     async function cargarDatos() {
       try {
         const now = new Date();
-        const mes = now.getMonth() + 1; // JavaScript months are 0-indexed
+        const mes = now.getMonth() + 1;
         const anio = now.getFullYear();
 
         const [proximo, eventos] = await Promise.all([
@@ -35,14 +38,26 @@ export default function DashboardPage() {
   }, []);
 
   // Extraer días con eventos para el mini calendario
-  const eventDates = eventosDelMes.map(evento => 
+  const eventDates = eventosDelMes.map(evento =>
     new Date(evento.fechaEvento).getDate()
   );
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-[#6B7280]">Cargando...</p>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <motion.p 
+            className="text-[#6B7280]"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          >
+            Cargando...
+          </motion.p>
+        </motion.div>
       </div>
     );
   }
@@ -51,25 +66,57 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div className="border-b border-[#E8E8E8] pb-6">
-        <h1 className="text-3xl font-semibold text-[#3C3C3C]">Dashboard</h1>
-        <p className="text-[#6B7280] mt-2">Resumen de tu sistema de gestión</p>
+        <h1 className="text-3xl font-semibold text-[#3C3C3C]">
+          Dashboard
+        </h1>
+        <p className="text-[#6B7280] mt-2">
+          Resumen de tu sistema de gestión
+        </p>
       </div>
 
       {/* Grid de cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Card 1 - Próximo Evento */}
-        <div className="card p-6 hover:shadow-lg transition-shadow">
+        <motion.div 
+          className="card p-6 transition-shadow"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            type: "spring",
+            stiffness: 100,
+            damping: 12,
+            delay: 0.2
+          }}
+          whileHover={{
+            y: -5,
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+            transition: {
+              type: "spring",
+              stiffness: 300,
+              damping: 20
+            }
+          }}
+        >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-medium text-[#6B7280]">Próximo Evento</h3>
             {eventoProximo && (
-              <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full font-medium">
+              <motion.span 
+                className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full font-medium"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+              >
                 {EstadoEventoLabels[eventoProximo.estadoEvento]}
-              </span>
+              </motion.span>
             )}
           </div>
-          
+
           {eventoProximo ? (
-            <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
               <p className="text-2xl font-semibold text-[#3C3C3C] mb-1">
                 {eventoProximo.nombreCliente}
               </p>
@@ -83,52 +130,154 @@ export default function DashboardPage() {
               <p className="text-xs text-[#9CA3AF]">
                 {TipoEventoLabels[eventoProximo.tipoEvento]}
               </p>
-              <div className="mt-4 pt-4 border-t border-[#F3F4F6]">
+              <motion.div 
+                className="mt-4 pt-4 border-t border-[#F3F4F6]"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ delay: 0.6, duration: 0.3 }}
+                style={{ transformOrigin: "left" }}
+              >
                 <p className="text-xs text-[#9CA3AF]">
                   {eventoProximo.cantidadInvitados} invitados
                 </p>
-              </div>
-            </>
+              </motion.div>
+            </motion.div>
           ) : (
             <p className="text-[#9CA3AF]">No hay eventos próximos</p>
           )}
-        </div>
+        </motion.div>
 
         {/* Card 2 - Próxima Reunión */}
-        <div className="card p-6 hover:shadow-lg transition-shadow">
+        <motion.div 
+          className="card p-6 transition-shadow"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            type: "spring",
+            stiffness: 100,
+            damping: 12,
+            delay: 0.28
+          }}
+          whileHover={{
+            y: -5,
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+            transition: {
+              type: "spring",
+              stiffness: 300,
+              damping: 20
+            }
+          }}
+        >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-medium text-[#6B7280]">Próxima Reunión</h3>
-            <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full font-medium">
+            <motion.span 
+              className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full font-medium"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.6, type: "spring", stiffness: 200 }}
+            >
               Agendada
-            </span>
+            </motion.span>
           </div>
           <p className="text-2xl font-semibold text-[#3C3C3C] mb-1">María López</p>
           <p className="text-sm text-[#9CA3AF]">Hoy, 14:00 hs</p>
-          <div className="mt-4 pt-4 border-t border-[#F3F4F6]">
+          <motion.div 
+            className="mt-4 pt-4 border-t border-[#F3F4F6]"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 0.7, duration: 0.3 }}
+            style={{ transformOrigin: "left" }}
+          >
             <p className="text-xs text-[#9CA3AF]">Visita al salón</p>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Card 3 - Mini Calendario */}
-        <div className="lg:col-span-1">
+        <motion.div 
+          className="lg:col-span-1"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            type: "spring",
+            stiffness: 100,
+            damping: 12,
+            delay: 0.36
+          }}
+        >
           <MiniCalendar eventDates={eventDates} />
-        </div>
+        </motion.div>
       </div>
 
       {/* Estadísticas rápidas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card p-6">
+        <motion.div 
+          className="card p-6"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{
+            type: "spring",
+            stiffness: 200,
+            damping: 15,
+            delay: 0.44
+          }}
+          whileHover={{ scale: 1.05 }}
+        >
           <p className="text-sm text-[#6B7280] mb-1">Eventos este mes</p>
-          <p className="text-3xl font-semibold text-[#3C3C3C]">{eventosDelMes.length}</p>
-        </div>
-        <div className="card p-6">
+          <motion.p 
+            className="text-3xl font-semibold text-[#3C3C3C]"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, type: "spring", stiffness: 150 }}
+          >
+            {eventosDelMes.length}
+          </motion.p>
+        </motion.div>
+        
+        <motion.div 
+          className="card p-6"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{
+            type: "spring",
+            stiffness: 200,
+            damping: 15,
+            delay: 0.52
+          }}
+          whileHover={{ scale: 1.05 }}
+        >
           <p className="text-sm text-[#6B7280] mb-1">Reuniones este mes</p>
-          <p className="text-3xl font-semibold text-[#3C3C3C]">12</p>
-        </div>
-        <div className="card p-6">
+          <motion.p 
+            className="text-3xl font-semibold text-[#3C3C3C]"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6, type: "spring", stiffness: 150 }}
+          >
+            12
+          </motion.p>
+        </motion.div>
+        
+        <motion.div 
+          className="card p-6"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{
+            type: "spring",
+            stiffness: 200,
+            damping: 15,
+            delay: 0.60
+          }}
+          whileHover={{ scale: 1.05 }}
+        >
           <p className="text-sm text-[#6B7280] mb-1">Cotizaciones pendientes</p>
-          <p className="text-3xl font-semibold text-[#3C3C3C]">5</p>
-        </div>
+          <motion.p 
+            className="text-3xl font-semibold text-[#3C3C3C]"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.7, type: "spring", stiffness: 150 }}
+          >
+            5
+          </motion.p>
+        </motion.div>
       </div>
     </div>
   );
