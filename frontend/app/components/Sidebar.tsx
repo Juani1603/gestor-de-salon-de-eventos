@@ -10,8 +10,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 const menuItems = [
   { name: 'Dashboard', icon: Home, path: '/dashboard' },
   { name: 'Eventos', icon: Calendar, path: '/eventos' },
-  { name: 'Reuniones', icon: Users, path: '/reuniones' },
   { name: 'Cotizaciones', icon: FileText, path: '/cotizaciones' },
+  { name: 'Reuniones', icon: Users, path: '/reuniones' },
+
 ];
 
 export default function Sidebar() {
@@ -23,10 +24,10 @@ export default function Sidebar() {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 1024);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -59,7 +60,7 @@ export default function Sidebar() {
       {/* Sidebar con animación de slide solo en mobile */}
       <motion.aside
         initial={false}
-        animate={{ 
+        animate={{
           x: isMobile ? (isOpen ? 0 : '-100%') : 0
         }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
