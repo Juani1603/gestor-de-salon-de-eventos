@@ -70,7 +70,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-radius: 8px;
   transition: all 150ms;
   cursor: pointer;

@@ -11,7 +11,7 @@ export default function DashboardLayout({
       <Sidebar />
 
       {/* Main Content Area */}
-      <main className="flex-1 lg:ml-64 p-4 lg:p-8">
+      <main className="flex-1 lg:ml-64 p-4 pt-16 lg:p-8">
         {/* Container con max-width para contenido */}
         <div className="max-w-7xl mx-auto">
           {children}

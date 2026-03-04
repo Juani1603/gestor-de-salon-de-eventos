@@ -69,7 +69,7 @@ export default function Sidebar() {
           bg-white border-r border-[#E8E8E8]
         "
       >
-        <div className="flex flex-col h-full p-6">
+        <div className="flex flex-col h-full p-6 ml-2">
           {/* Logo con animación de entrada */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
