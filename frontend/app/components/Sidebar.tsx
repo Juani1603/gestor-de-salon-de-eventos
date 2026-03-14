@@ -64,10 +64,7 @@ export default function Sidebar() {
           x: isMobile ? (isOpen ? 0 : '-100%') : 0
         }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="
-          fixed top-0 left-0 h-screen w-64 z-40
-          bg-white border-r border-[#E8E8E8]
-        "
+        className="fixed top-0 left-0 h-[100dvh] w-64 z-40 bg-white border-r border-[#E8E8E8]"
       >
         <div className="flex flex-col h-full p-6 ml-2">
           {/* Logo con animación de entrada */}
