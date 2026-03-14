@@ -1,5 +1,4 @@
 ﻿using LogicaDeAplicacion.InterfacesCasosDeUso.IEvento;
-using LogicaDeAplicacion.InterfacesCasosDeUso;
 using LogicaDeNegocio.Entidades;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,17 +12,20 @@ namespace SalonEventos.API.Controllers
         private readonly IObtenerEventoProximo _obtenerEventoProximo;
         private readonly IObtenerEventosDelMes _obtenerEventosDelMes;
         private readonly IObtenerEventosEntreFechas _obtenerEventosEntreFechas;
+        private readonly IAltaEvento _altaEvento;
 
         public EventoController(
             IObtenerEventoPorId obtenerEventoPorId,
             IObtenerEventoProximo obtenerEventoProximo,
             IObtenerEventosDelMes obtenerEventosDelMes,
-            IObtenerEventosEntreFechas obtenerEventosEntreFechas)
+            IObtenerEventosEntreFechas obtenerEventosEntreFechas,
+            IAltaEvento altaEvento)
         {
             _obtenerEventoPorId = obtenerEventoPorId;
             _obtenerEventoProximo = obtenerEventoProximo;
             _obtenerEventosDelMes = obtenerEventosDelMes;
             _obtenerEventosEntreFechas = obtenerEventosEntreFechas;
+            _altaEvento = altaEvento;
         }
 
         // GET: api/evento/proximo
@@ -93,6 +95,21 @@ namespace SalonEventos.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { mensaje = ex.Message });
+            }
+        }
+
+        //POST: api/evento
+        [HttpPost]
+        public ActionResult<Evento> AltaEvento(Evento evento)
+        {
+            try
+            {
+                _altaEvento.AltaEvento(evento);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
             }
         }
     }

@@ -71,7 +71,7 @@ export default function EventosPage() {
   const yearOptions = Array.from({ length: 11 }, (_, i) => currentYearNow - 5 + i);
 
   return (
-    <div className="flex-1 space-y-6 min-w-0">
+    <div className="flex-1 space-y-6 min-w-0 overflow-x-hidden">
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -89,7 +89,7 @@ export default function EventosPage() {
         </button>
       </div>
 
-      {/*  Calendar card y Side panel */}
+      {/* Calendar card y Side panel */}
       <div className="flex gap-6 items-stretch">
 
         {/* Calendar card */}
@@ -246,48 +246,31 @@ export default function EventosPage() {
           )}
         </div>
 
-        {/* ← Side panel ahora es hermano directo del calendar card */}
+        {/* Side panel — desktop only, se muestra al lado del calendario */}
         <div
-          className={`transition-all duration-300 ease-in-out overflow-hidden self-stretch ${
-            selectedEvento ? 'w-96 opacity-100' : 'w-0 opacity-0 pointer-events-none'
+          className={`hidden lg:block transition-all duration-300 ease-in-out self-stretch ${
+            selectedEvento ? 'w-80 opacity-100' : 'w-0 opacity-0 pointer-events-none'
           }`}
         >
-          {/* Mobile overlay */}
-          {selectedEvento && (
-            <div className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onClick={() => setSelectedEvento(null)} />
-          )}
-
-          <div className="fixed top-0 right-0 w-96 bg-white z-50 h-screen overflow-y-auto shadow-2xl lg:static lg:h-full lg:shadow-none lg:rounded-2xl lg:border lg:border-[#F0F0F0] lg:overflow-y-auto"
-            style={{
-              transform: selectedEvento ? 'translateX(0)' : 'translateX(100%)',
-              transition: 'transform 0.3s ease-in-out',
-            }}
-          >
+          <div className="w-80 h-full bg-white rounded-2xl border border-[#F0F0F0] overflow-y-auto">
             {/* Panel header */}
-            <div
-              className="px-6 py-4 flex items-center justify-between rounded-t-2xl"
-              style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}
-            >
+            <div className="px-5 py-4 flex items-center justify-between border-b border-[#F0F0F0] sticky top-0 bg-white rounded-t-2xl z-10">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-white/70">Detalle</p>
-                <h3 className="text-lg font-bold text-white leading-tight">Evento</h3>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-0.5">Detalle</p>
+                <h3 className="text-base font-bold text-[#1C1C1C] leading-tight">
+                  {selectedEvento?.nombreCliente ?? ''}
+                </h3>
               </div>
               <button
                 onClick={() => setSelectedEvento(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/20 hover:bg-white/30 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-xl border border-[#EBEBEB] hover:bg-[#F9F9F9] transition-colors"
               >
-                <X size={16} className="text-white" />
+                <X size={15} className="text-[#6B7280]" />
               </button>
             </div>
 
             {selectedEvento && (
-              <div className="flex flex-col p-6 gap-5">
-
-                {/* Cliente */}
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1">Cliente</p>
-                  <p className="text-xl font-bold text-[#1C1C1C]">{selectedEvento.nombreCliente}</p>
-                </div>
+              <div className="flex flex-col p-5 gap-5">
 
                 {/* Fecha */}
                 <div>
@@ -299,16 +282,16 @@ export default function EventosPage() {
                   </p>
                 </div>
 
-                {/* Tipo + Estado en fila */}
+                {/* Tipo + Estado */}
                 <div className="flex gap-3">
                   <div className="flex-1">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1">Tipo</p>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Tipo</p>
                     <span className="inline-block px-3 py-1 bg-[#FEF3F0] text-[#FF6B35] rounded-lg text-xs font-semibold">
                       {TipoEventoLabels[selectedEvento.tipoEvento]}
                     </span>
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1">Estado</p>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Estado</p>
                     <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-semibold border border-emerald-100">
                       {EstadoEventoLabels[selectedEvento.estadoEvento]}
                     </span>
@@ -351,6 +334,104 @@ export default function EventosPage() {
         </div>
 
       </div>
+
+      {/* Mobile modal — fuera del flex para evitar overflow */}
+      {selectedEvento && (
+        <>
+          {/* Overlay */}
+          <div
+            className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+            onClick={() => setSelectedEvento(null)}
+          />
+
+          {/* Sheet desde abajo */}
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl min-h-[70vh] max-h-[95vh]overflow-y-auto">
+
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-[#E5E7EB]" />
+            </div>
+
+            {/* Header */}
+            <div className="px-5 py-3 flex items-center justify-between border-b border-[#F0F0F0]">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-0.5">Detalle</p>
+                <h3 className="text-base font-bold text-[#1C1C1C] leading-tight">
+                  {selectedEvento.nombreCliente}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedEvento(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-xl border border-[#EBEBEB] hover:bg-[#F9F9F9] transition-colors"
+              >
+                <X size={15} className="text-[#6B7280]" />
+              </button>
+            </div>
+
+            <div className="flex flex-col p-5 gap-5">
+
+              {/* Fecha */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1">Fecha</p>
+                <p className="text-sm text-[#3C3C3C]">
+                  {new Date(selectedEvento.fechaEvento).toLocaleDateString('es-ES', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                  })}
+                </p>
+              </div>
+
+              {/* Tipo + Estado */}
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Tipo</p>
+                  <span className="inline-block px-3 py-1 bg-[#FEF3F0] text-[#FF6B35] rounded-lg text-xs font-semibold">
+                    {TipoEventoLabels[selectedEvento.tipoEvento]}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Estado</p>
+                  <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-semibold border border-emerald-100">
+                    {EstadoEventoLabels[selectedEvento.estadoEvento]}
+                  </span>
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-[#FAFAFA] border border-[#F0F0F0] rounded-xl p-3">
+                  <div className="flex items-center gap-1.5 text-[#9CA3AF] mb-1">
+                    <Users size={12} />
+                    <span className="text-xs">Invitados</span>
+                  </div>
+                  <p className="text-2xl font-bold text-[#1C1C1C]">{selectedEvento.cantidadInvitados}</p>
+                </div>
+                <div className="bg-[#FAFAFA] border border-[#F0F0F0] rounded-xl p-3">
+                  <div className="flex items-center gap-1.5 text-[#9CA3AF] mb-1">
+                    <DollarSign size={12} />
+                    <span className="text-xs">Por persona</span>
+                  </div>
+                  <p className="text-2xl font-bold text-[#1C1C1C]">${selectedEvento.precioPorInvitado.toFixed(0)}</p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="space-y-2 pt-1 pb-2">
+                <button
+                  className="w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-orange-200 active:scale-95"
+                  style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}
+                >
+                  Ver Planificación
+                </button>
+                <button className="w-full px-4 py-2.5 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors">
+                  Editar Evento
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </>
+      )}
+
     </div>
   );
 }

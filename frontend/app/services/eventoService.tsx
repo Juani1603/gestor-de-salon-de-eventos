@@ -39,4 +39,13 @@ export const eventoService = {
       return null;
     }
   },
+
+  async crearEvento(evento: Evento): Promise<Evento | null> {
+    try {
+      return await apiClient.post<Evento>('/evento', evento);
+    } catch (error) {
+      console.error('Error al crear evento:', error);
+      return null;
+    }
+  },
 };
