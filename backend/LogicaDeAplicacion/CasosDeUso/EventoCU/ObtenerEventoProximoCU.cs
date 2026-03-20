@@ -1,4 +1,6 @@
-﻿using LogicaDeAplicacion.InterfacesCasosDeUso.IEvento;
+﻿using LogicaDeAplicacion.DTOs;
+using LogicaDeAplicacion.InterfacesCasosDeUso.IEvento;
+using LogicaDeAplicacion.Mappers;
 using LogicaDeNegocio.Entidades;
 using LogicaDeNegocio.InterfacesRepositorio;
 using System;
@@ -16,9 +18,9 @@ namespace LogicaDeAplicacion.CasosDeUso.EventoCU
         {
             _repositorio = repositorio;
         }
-        public Evento? ObtenerEventoProximo()
+        public EventoDTO? ObtenerEventoProximo()
         {
-            return _repositorio.ObtenerEventoProximo();
+            return EventoMapper.ToDTO(_repositorio.ObtenerEventoProximo());
         }
     }
 }

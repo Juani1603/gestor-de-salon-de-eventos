@@ -1,4 +1,5 @@
-﻿using LogicaDeAplicacion.InterfacesCasosDeUso.IEvento;
+﻿using LogicaDeAplicacion.DTOs;
+using LogicaDeAplicacion.InterfacesCasosDeUso.IEvento;
 using LogicaDeNegocio.Entidades;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,11 +31,11 @@ namespace SalonEventos.API.Controllers
 
         // GET: api/evento/proximo
         [HttpGet("proximo")]
-        public ActionResult<Evento> ObtenerEventoProximo()
+        public ActionResult<EventoDTO> ObtenerEventoProximo()
         {
             try
             {
-                Evento? evento = _obtenerEventoProximo.ObtenerEventoProximo();
+                EventoDTO? evento = _obtenerEventoProximo.ObtenerEventoProximo();
 
                 if (evento == null)
                     return NotFound(new { mensaje = "No hay eventos próximos" });
@@ -49,11 +50,11 @@ namespace SalonEventos.API.Controllers
 
         // GET: api/evento/mes?mes=1&anio=2026
         [HttpGet("mes")]
-        public ActionResult<IEnumerable<Evento>> ObtenerEventosDelMes([FromQuery] int mes, [FromQuery] int anio)
+        public ActionResult<IEnumerable<EventoDTO>> ObtenerEventosDelMes([FromQuery] int mes, [FromQuery] int anio)
         {
             try
             {
-                IEnumerable<Evento> eventos = _obtenerEventosDelMes.ObtenerEventosDelMes(mes, anio);
+                IEnumerable<EventoDTO> eventos = _obtenerEventosDelMes.ObtenerEventosDelMes(mes, anio);
                 return Ok(eventos);
             }
             catch (Exception ex)
@@ -64,13 +65,13 @@ namespace SalonEventos.API.Controllers
 
         // GET: api/evento/rango?fechaInicio=2026-01-01&fechaFin=2026-01-31
         [HttpGet("rango")]
-        public ActionResult<IEnumerable<Evento>> ObtenerEventosEntreFechas(
+        public ActionResult<IEnumerable<EventoDTO>> ObtenerEventosEntreFechas(
             [FromQuery] DateTime fechaInicio,
             [FromQuery] DateTime fechaFin)
         {
             try
             {
-                IEnumerable<Evento> eventos = _obtenerEventosEntreFechas.ObtenerEventosEntreFechas(fechaInicio, fechaFin);
+                IEnumerable<EventoDTO> eventos = _obtenerEventosEntreFechas.ObtenerEventosEntreFechas(fechaInicio, fechaFin);
                 return Ok(eventos);
             }
             catch (Exception ex)
@@ -81,11 +82,11 @@ namespace SalonEventos.API.Controllers
 
         // GET: api/evento/5
         [HttpGet("{id}")]
-        public ActionResult<Evento> ObtenerPorId(int id)
+        public ActionResult<EventoDTO> ObtenerPorId(int id)
         {
             try
             {
-                Evento evento = _obtenerEventoPorId.ObtenerEventoPorId(id);
+                EventoDTO evento = _obtenerEventoPorId.ObtenerEventoPorId(id);
 
                 if (evento == null)
                     return NotFound(new { mensaje = "Evento no encontrado" });
@@ -100,7 +101,7 @@ namespace SalonEventos.API.Controllers
 
         //POST: api/evento
         [HttpPost]
-        public ActionResult<Evento> AltaEvento(Evento evento)
+        public ActionResult<EventoDTO> AltaEvento(EventoDTO evento)
         {
             try
             {

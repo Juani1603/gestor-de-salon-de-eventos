@@ -2,6 +2,7 @@
 using LogicaDeAplicacion.InterfacesCasosDeUso;
 using LogicaDeNegocio.Entidades;
 using Microsoft.AspNetCore.Mvc;
+using LogicaDeAplicacion.DTOs;
 
 namespace SalonEventos.API.Controllers
 {
@@ -25,7 +26,7 @@ namespace SalonEventos.API.Controllers
 
         // POST: api/cotizacion
         [HttpPost]
-        public ActionResult<Cotizacion> CrearCotizacion([FromBody] Cotizacion cotizacion)
+        public ActionResult<Cotizacion> CrearCotizacion([FromBody] CotizacionDTO cotizacion)
         {
             try
             {
@@ -41,11 +42,11 @@ namespace SalonEventos.API.Controllers
 
         // GET: api/cotizacion
         [HttpGet]
-        public ActionResult<IEnumerable<Cotizacion>> ObtenerTodas()
+        public ActionResult<IEnumerable<CotizacionDTO>> ObtenerTodas()
         {
             try
             {
-                IEnumerable<Cotizacion> cotizaciones = _obtenerCotizaciones.ObtenerCotizaciones();
+                IEnumerable<CotizacionDTO> cotizaciones = _obtenerCotizaciones.ObtenerCotizaciones();
                 return Ok(cotizaciones.OrderBy(c => c.EventoId.HasValue)
                                        .ThenByDescending(c => c.FechaCreacion));
             }
@@ -57,11 +58,11 @@ namespace SalonEventos.API.Controllers
 
         // GET: api/cotizacion/5
         [HttpGet("{id}")]
-        public ActionResult<Cotizacion> ObtenerPorId(int id)
+        public ActionResult<CotizacionDTO> ObtenerPorId(int id)
         {
             try
             {
-                Cotizacion cotizacion = _obtenerCotizacionPorId.ObtenerCotizacionPorId(id);
+                CotizacionDTO cotizacion = _obtenerCotizacionPorId.ObtenerCotizacionPorId(id);
 
                 if (cotizacion == null)
                     return NotFound(new { mensaje = "Cotización no encontrada" });

@@ -1,4 +1,6 @@
-﻿using LogicaDeAplicacion.InterfacesCasosDeUso.ICotizacion;
+﻿using LogicaDeAplicacion.DTOs;
+using LogicaDeAplicacion.InterfacesCasosDeUso.ICotizacion;
+using LogicaDeAplicacion.Mappers;
 using LogicaDeNegocio.Entidades;
 using LogicaDeNegocio.InterfacesRepositorio;
 using System;
@@ -17,9 +19,9 @@ namespace LogicaDeAplicacion.CasosDeUso.CotizacionCU
             _repositorio = repositorio;
         }
 
-        public Cotizacion ObtenerCotizacionPorId(int id)
+        public CotizacionDTO ObtenerCotizacionPorId(int id)
         {
-            return _repositorio.FindById(id);
+            return CotizacionMapper.ToDTO(_repositorio.FindById(id));
         }
     }
 }

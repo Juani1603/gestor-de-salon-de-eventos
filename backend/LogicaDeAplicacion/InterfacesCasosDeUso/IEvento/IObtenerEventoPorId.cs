@@ -1,4 +1,5 @@
-﻿using LogicaDeNegocio.Entidades;
+﻿using LogicaDeAplicacion.DTOs;
+using LogicaDeNegocio.Entidades;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace LogicaDeAplicacion.InterfacesCasosDeUso.IEvento
 {
     public interface IObtenerEventoPorId
     {
-        Evento ObtenerEventoPorId(int idEvento);
+        EventoDTO ObtenerEventoPorId(int idEvento);
     }
 }

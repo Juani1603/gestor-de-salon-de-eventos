@@ -1,4 +1,6 @@
-﻿using LogicaDeAplicacion.InterfacesCasosDeUso.IEvento;
+﻿using LogicaDeAplicacion.DTOs;
+using LogicaDeAplicacion.InterfacesCasosDeUso.IEvento;
+using LogicaDeAplicacion.Mappers;
 using LogicaDeNegocio.Entidades;
 using LogicaDeNegocio.InterfacesRepositorio;
 using System;
@@ -17,9 +19,9 @@ namespace LogicaDeAplicacion.CasosDeUso.EventoCU
             _repositorio = repositorio;
         }
 
-        public Evento ObtenerEventoPorId(int idEvento)
+        public EventoDTO ObtenerEventoPorId(int idEvento)
         {
-            return _repositorio.FindById(idEvento);
+            return EventoMapper.ToDTO(_repositorio.FindById(idEvento));
         }
     }
 }

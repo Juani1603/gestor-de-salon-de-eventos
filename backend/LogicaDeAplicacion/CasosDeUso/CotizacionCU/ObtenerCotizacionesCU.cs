@@ -1,4 +1,6 @@
-﻿using LogicaDeAplicacion.InterfacesCasosDeUso.ICotizacion;
+﻿using LogicaDeAplicacion.DTOs;
+using LogicaDeAplicacion.InterfacesCasosDeUso.ICotizacion;
+using LogicaDeAplicacion.Mappers;
 using LogicaDeNegocio.Entidades;
 using LogicaDeNegocio.InterfacesRepositorio;
 using System;
@@ -17,9 +19,13 @@ namespace LogicaDeAplicacion.CasosDeUso.CotizacionCU
             _repositorio = repositorio;
         }
 
-        public IEnumerable<Cotizacion> ObtenerCotizaciones()
+        public IEnumerable<CotizacionDTO> ObtenerCotizaciones()
         {
-            return _repositorio.FindAll();
+            IEnumerable<Cotizacion> retorno =
+               _repositorio.FindAll();
+            return retorno.Select(
+                cotizacion => CotizacionMapper.ToDTO(cotizacion)
+            ); ;
         }
     }
 }

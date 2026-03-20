@@ -1,4 +1,6 @@
-﻿using LogicaDeAplicacion.InterfacesCasosDeUso.ICotizacion;
+﻿using LogicaDeAplicacion.DTOs;
+using LogicaDeAplicacion.InterfacesCasosDeUso.ICotizacion;
+using LogicaDeAplicacion.Mappers;
 using LogicaDeNegocio.Entidades;
 using LogicaDeNegocio.InterfacesRepositorio;
 using System;
@@ -17,9 +19,9 @@ namespace LogicaDeAplicacion.CasosDeUso.CotizacionCU
             _repositorio = repositorio;
         }
 
-        public void AltaCotizacion(Cotizacion cotizacion)
+        public void AltaCotizacion(CotizacionDTO cotizacion)
         {
-            _repositorio.Add(cotizacion);
+            _repositorio.Add(CotizacionMapper.FromDTO(cotizacion));
         }
     }
 }
