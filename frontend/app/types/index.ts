@@ -15,7 +15,7 @@ export enum EstadoEvento {
 
 export interface Evento {
   id: number;
-  cotizacionId: number;
+  cotizacionId: number | null;
   nombreCliente: string;
   fechaEvento: string; 
   tipoEvento: TipoEvento;

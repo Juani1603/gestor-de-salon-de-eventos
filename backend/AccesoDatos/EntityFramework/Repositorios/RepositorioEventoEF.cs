@@ -1,6 +1,7 @@
 ﻿using LogicaDeNegocio.Entidades;
 using LogicaDeNegocio.Exceptions;
 using LogicaDeNegocio.InterfacesRepositorio;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,6 +67,7 @@ namespace AccesoDatos.EntityFramework.Repositorios
             return _context.Eventos
                 .Where(e => e.FechaEvento.Year == anio && e.FechaEvento.Month == mes)
                 .OrderBy(e => e.FechaEvento)
+                .AsNoTracking()
                 .ToList();
         }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Calendar, X, Users, DollarSign, Star, Heart, Cake, Briefcase } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Calendar, X, Users, DollarSign, Star, Heart, Cake, Briefcase, CheckCircle, AlertCircle, Trash2 } from 'lucide-react';
 import { eventoService } from '@/app/services/eventoService';
 import { Evento, TipoEventoLabels, EstadoEventoLabels } from '@/app/types';
 
@@ -37,6 +37,13 @@ export default function EventosPage() {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState(FORM_INITIAL);
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+  const [eliminando, setEliminando] = useState(false);
+
+  const showToast = (msg: string, type: 'success' | 'error') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   useEffect(() => {
     cargarEventosDelMes();
@@ -59,7 +66,7 @@ export default function EventosPage() {
     try {
       const nuevoEvento = {
         id: 0,
-        cotizacionId: 0,
+        cotizacionId: null,
         nombreCliente: formData.nombreCliente,
         fechaEvento: formData.fechaEvento,
         tipoEvento: formData.tipoEvento,
@@ -75,8 +82,23 @@ export default function EventosPage() {
       setShowModal(false);
       setFormData(FORM_INITIAL);
       cargarEventosDelMes();
-    } catch (error) {
-      console.error('Error creando evento:', error);
+      showToast('Evento creado exitosamente', 'success');
+    } catch (error: any) {
+      showToast(error?.message ?? 'Error al crear el evento', 'error');
+    }
+  }
+
+  async function handleEliminarEvento(id: number) {
+    try {
+      setEliminando(true);
+      await eventoService.eliminarEvento(id);
+      setSelectedEvento(null);
+      cargarEventosDelMes();
+      showToast('Evento eliminado correctamente', 'success');
+    } catch (error: any) {
+      showToast(error?.message ?? 'Error al eliminar el evento', 'error');
+    } finally {
+      setEliminando(false);
     }
   }
 
@@ -121,6 +143,17 @@ export default function EventosPage() {
 
   const currentYearNow = new Date().getFullYear();
   const yearOptions = Array.from({ length: 11 }, (_, i) => currentYearNow - 5 + i);
+
+  const BtnEliminar = ({ id }: { id: number }) => (
+    <button
+      onClick={() => handleEliminarEvento(id)}
+      disabled={eliminando}
+      className="flex items-center px-3 py-2 rounded-xl border border-red-200 bg-red-50 text-red-500 text-xs font-semibold hover:bg-red-100 hover:border-red-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      <Trash2 size={13} className={eliminando ? 'animate-pulse' : ''} />
+      <span className="hidden sm:inline"></span>
+    </button>
+  );
 
   return (
     <div className="flex-1 space-y-6 min-w-0 overflow-x-hidden">
@@ -284,11 +317,8 @@ export default function EventosPage() {
                       key={index}
                       onClick={() => {
                         if (!day) return;
-                        if (hasEvents) {
-                          setSelectedEvento(eventosDelDia[0]);
-                        } else {
-                          openModalWithDate(day);
-                        }
+                        if (hasEvents) setSelectedEvento(eventosDelDia[0]);
+                        else openModalWithDate(day);
                       }}
                       className={`aspect-square p-1 rounded-lg border flex flex-col items-center justify-center transition-all ${
                         day ? 'bg-white' : 'bg-[#FAFAFA]'
@@ -329,12 +359,15 @@ export default function EventosPage() {
                   {selectedEvento?.nombreCliente ?? ''}
                 </h3>
               </div>
-              <button
-                onClick={() => setSelectedEvento(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-xl border border-[#EBEBEB] hover:bg-[#F9F9F9] transition-colors"
-              >
-                <X size={15} className="text-[#6B7280]" />
-              </button>
+              <div className="flex items-center gap-2">
+                {selectedEvento && <BtnEliminar id={selectedEvento.id} />}
+                <button
+                  onClick={() => setSelectedEvento(null)}
+                  className="w-8 h-8 flex items-center justify-center rounded-xl border border-[#EBEBEB] hover:bg-[#F9F9F9] transition-colors"
+                >
+                  <X size={15} className="text-[#6B7280]" />
+                </button>
+              </div>
             </div>
 
             {selectedEvento && (
@@ -411,12 +444,15 @@ export default function EventosPage() {
                 <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-0.5">Detalle</p>
                 <h3 className="text-base font-bold text-[#1C1C1C] leading-tight">{selectedEvento.nombreCliente}</h3>
               </div>
-              <button
-                onClick={() => setSelectedEvento(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-xl border border-[#EBEBEB] hover:bg-[#F9F9F9] transition-colors"
-              >
-                <X size={15} className="text-[#6B7280]" />
-              </button>
+              <div className="flex items-center gap-2">
+                <BtnEliminar id={selectedEvento.id} />
+                <button
+                  onClick={() => setSelectedEvento(null)}
+                  className="w-8 h-8 flex items-center justify-center rounded-xl border border-[#EBEBEB] hover:bg-[#F9F9F9] transition-colors"
+                >
+                  <X size={15} className="text-[#6B7280]" />
+                </button>
+              </div>
             </div>
             <div className="flex flex-col p-5 gap-5">
               <div>
@@ -501,7 +537,6 @@ export default function EventosPage() {
             </div>
 
             <div className="px-7 py-6 space-y-5">
-
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Nombre del Cliente</label>
                 <input
@@ -609,6 +644,27 @@ export default function EventosPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold flex items-center gap-2.5 border transition-all ${
+            toast.type === 'success'
+              ? 'bg-green-50 border-green-500 text-green-600'
+              : 'bg-red-50 border-red-500 text-red-600'
+          }`}
+          style={{ animation: 'modalIn 0.2s ease-out' }}
+        >
+          {toast.type === 'success'
+            ? <CheckCircle size={18} className="text-green-500 shrink-0" />
+            : <AlertCircle size={18} className="text-red-500 shrink-0" />
+          }
+          {toast.msg}
+          <button onClick={() => setToast(null)} className="ml-1">
+            <X size={15} className={toast.type === 'success' ? 'text-green-400' : 'text-red-400'} />
+          </button>
         </div>
       )}
 

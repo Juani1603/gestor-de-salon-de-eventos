@@ -1,14 +1,9 @@
 ﻿using LogicaDeNegocio.Entidades;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AccesoDatos.EntityFramework
 {
-    
+
     public class Context : DbContext
     {
         public DbSet<Cotizacion> Cotizaciones { get; set; }
@@ -38,6 +33,14 @@ namespace AccesoDatos.EntityFramework
             modelBuilder.Entity<Evento>()
                 .Property(e => e.PrecioPorInvitado)
                 .HasColumnType("decimal(10,2)");
+
+            modelBuilder.Entity<Evento>()
+                .Property(e => e.CotizacionId)
+                .IsRequired(false);
+
+            modelBuilder.Entity<Evento>()
+                .Property(e => e.PlanificacionId)
+                .IsRequired(false);
         }
     }
 }

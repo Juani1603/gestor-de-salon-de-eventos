@@ -41,11 +41,10 @@ export const eventoService = {
   },
 
   async crearEvento(evento: Evento): Promise<Evento | null> {
-    try {
-      return await apiClient.post<Evento>('/evento', evento);
-    } catch (error) {
-      console.error('Error al crear evento:', error);
-      return null;
-    }
+    return await apiClient.post<Evento>('/evento', evento);
+  },
+
+  async eliminarEvento(id: number): Promise<void> {
+    await apiClient.delete(`/evento/${id}`);
   },
 };

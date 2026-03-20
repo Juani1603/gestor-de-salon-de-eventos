@@ -43,6 +43,7 @@ namespace SalonEventos.API
             builder.Services.AddScoped<IObtenerEventosDelMes, ObtenerEventosDelMesCU>();
             builder.Services.AddScoped<IObtenerEventosEntreFechas, ObtenerEventosEntreFechasCU>();
             builder.Services.AddScoped<IAltaEvento, AltaEventoCU>();
+            builder.Services.AddScoped<IEliminarEvento, EliminarEventoCU>();
 
             //Reunión
             builder.Services.AddScoped<IAltaReunion, AltaReunionCU>();

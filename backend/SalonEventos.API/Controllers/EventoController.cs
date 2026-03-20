@@ -14,19 +14,22 @@ namespace SalonEventos.API.Controllers
         private readonly IObtenerEventosDelMes _obtenerEventosDelMes;
         private readonly IObtenerEventosEntreFechas _obtenerEventosEntreFechas;
         private readonly IAltaEvento _altaEvento;
+        private readonly IEliminarEvento _eliminarEvento;
 
         public EventoController(
             IObtenerEventoPorId obtenerEventoPorId,
             IObtenerEventoProximo obtenerEventoProximo,
             IObtenerEventosDelMes obtenerEventosDelMes,
             IObtenerEventosEntreFechas obtenerEventosEntreFechas,
-            IAltaEvento altaEvento)
+            IAltaEvento altaEvento,
+            IEliminarEvento eliminarEvento)
         {
             _obtenerEventoPorId = obtenerEventoPorId;
             _obtenerEventoProximo = obtenerEventoProximo;
             _obtenerEventosDelMes = obtenerEventosDelMes;
             _obtenerEventosEntreFechas = obtenerEventosEntreFechas;
             _altaEvento = altaEvento;
+            _eliminarEvento = eliminarEvento;
         }
 
         // GET: api/evento/proximo
@@ -106,6 +109,21 @@ namespace SalonEventos.API.Controllers
             try
             {
                 _altaEvento.AltaEvento(evento);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+        }
+
+        //DELETE: api/evento/5
+        [HttpDelete("{id}")]
+        public ActionResult<EventoDTO> EliminarEvento(int id)
+        {
+            try
+            {
+                _eliminarEvento.EliminarEvento(id);               
                 return Ok();
             }
             catch (Exception ex)
