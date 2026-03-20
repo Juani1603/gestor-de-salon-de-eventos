@@ -1,4 +1,5 @@
 ﻿using LogicaDeNegocio.Enum;
+using LogicaDeNegocio.Exceptions;
 using LogicaDeNegocio.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -59,7 +60,26 @@ namespace LogicaDeNegocio.Entidades
 
         public void Validar()
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(this.NombreCliente))
+            {
+                throw new EventoException("El nombre del cliente no puede estar vacío");
+            }
+            if (this.FechaEvento == DateTime.MinValue)
+            {
+                throw new EventoException("La fecha es obligatoria");
+            }
+            if (this.FechaEvento < DateTime.Today)
+            {
+                throw new EventoException("La fecha del evento no puede ser anterior a la fecha actual");
+            }
+            if (this.CantidadInvitados <= 0)
+            {
+                throw new EventoException("La cantidad de invitados es obligatoria");
+            }
+            if (this.PrecioPorInvitado <= 0)
+            {
+                throw new EventoException("El precio por invitado es obligatorio");
+            }
         }
     }
 }
