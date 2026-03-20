@@ -15,7 +15,7 @@ namespace LogicaDeNegocio.Entidades
     {
         public int Id { get; set; }
         [Required]
-        public int CotizacionId { get; set; }
+        public int? CotizacionId { get; set; }
         [ForeignKey(nameof(CotizacionId))]
         public Cotizacion? Cotizacion { get; set; }
         [Required]
