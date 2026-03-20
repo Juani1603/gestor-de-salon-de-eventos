@@ -14,8 +14,8 @@ const MONTHS = [
 
 const TIPO_EVENTO_OPTIONS = [
   { value: 0, label: 'Quinceaños', icon: <Star size={15} /> },
-  { value: 1, label: 'Boda',        icon: <Heart size={15} /> },
-  { value: 2, label: 'Cumpleaños',  icon: <Cake size={15} /> },
+  { value: 1, label: 'Boda', icon: <Heart size={15} /> },
+  { value: 2, label: 'Cumpleaños', icon: <Cake size={15} /> },
   { value: 3, label: 'Empresarial', icon: <Briefcase size={15} /> },
 ];
 
@@ -156,7 +156,7 @@ export default function EventosPage() {
   );
 
   return (
-    <div className="flex-1 space-y-6 min-w-0 overflow-x-hidden">
+    <div className="flex-1 space-y-6 min-w-0 overflow-x-hidden w-full">
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -191,7 +191,7 @@ export default function EventosPage() {
                 >
                   <ChevronLeft size={18} className="text-[#6B7280]" />
                 </button>
-                <h2 className="text-lg font-bold text-[#1C1C1C] min-w-[190px] text-center">
+                <h2 className="text-lg font-bold text-[#1C1C1C] sm:min-w-[190px] text-center">
                   {MONTHS[currentMonth]} {currentYear}
                 </h2>
                 <button
@@ -267,36 +267,33 @@ export default function EventosPage() {
                       onMouseEnter={() => isEmpty && setHoveredDay(day)}
                       onMouseLeave={() => setHoveredDay(null)}
                       onClick={() => isEmpty && openModalWithDate(day!)}
-                      className={`min-h-[110px] p-2.5 rounded-xl border transition-all ${
-                        day ? 'bg-white' : 'bg-[#FAFAFA]'
-                      } ${today ? 'border-[#FF6B35] border-2' : 'border-[#F0F0F0]'} ${
-                        isEmpty ? 'cursor-pointer hover:border-[#FFD4C2] hover:bg-[#FFFAF8]' : ''
-                      }`}
+                      className={`min-h-[110px] p-2.5 rounded-xl border transition-all ${day ? 'bg-white' : 'bg-[#FAFAFA]'
+                        } ${today ? 'border-[#FF6B35] border-2' : 'border-[#F0F0F0]'} ${isEmpty ? 'cursor-pointer hover:border-[#FFD4C2] hover:bg-[#FFFAF8]' : ''
+                        }`}
                     >
                       {day && (
                         <>
-                          <div className={`text-xs font-semibold mb-2 w-6 h-6 flex items-center justify-center rounded-full ${
-                            today ? 'bg-[#FF6B35] text-white' : 'text-[#6B7280]'
-                          }`}>
+                          <div className={`text-xs font-semibold mb-2 w-6 h-6 flex items-center justify-center rounded-full ${today ? 'bg-[#FF6B35] text-white' : 'text-[#6B7280]'
+                            }`}>
                             {day}
                           </div>
                           <div className="space-y-1">
                             {eventosDelDia.length > 0
                               ? eventosDelDia.map(evento => (
-                                  <div
-                                    key={evento.id}
-                                    onClick={(e) => { e.stopPropagation(); setSelectedEvento(evento); }}
-                                    className="text-xs px-2 py-1 rounded-lg text-white font-medium cursor-pointer truncate transition-all hover:brightness-90 active:scale-95"
-                                    style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}
-                                  >
-                                    {evento.nombreCliente}
-                                  </div>
-                                ))
+                                <div
+                                  key={evento.id}
+                                  onClick={(e) => { e.stopPropagation(); setSelectedEvento(evento); }}
+                                  className="text-xs px-2 py-1 rounded-lg text-white font-medium cursor-pointer truncate transition-all hover:brightness-90 active:scale-95"
+                                  style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}
+                                >
+                                  {evento.nombreCliente}
+                                </div>
+                              ))
                               : hoveredDay === day && (
-                                  <div className="flex items-center justify-center h-12 text-[#FFB59A] transition-all">
-                                    <Plus size={18} strokeWidth={1.5} />
-                                  </div>
-                                )
+                                <div className="flex items-center justify-center h-12 text-[#FFB59A] transition-all">
+                                  <Plus size={18} strokeWidth={1.5} />
+                                </div>
+                              )
                             }
                           </div>
                         </>
@@ -320,11 +317,9 @@ export default function EventosPage() {
                         if (hasEvents) setSelectedEvento(eventosDelDia[0]);
                         else openModalWithDate(day);
                       }}
-                      className={`aspect-square p-1 rounded-lg border flex flex-col items-center justify-center transition-all ${
-                        day ? 'bg-white' : 'bg-[#FAFAFA]'
-                      } ${day ? 'cursor-pointer' : ''} ${
-                        today ? 'border-[#FF6B35] border-2' : 'border-[#F0F0F0]'
-                      }`}
+                      className={`aspect-square p-1 rounded-lg border flex flex-col items-center justify-center transition-all ${day ? 'bg-white' : 'bg-[#FAFAFA]'
+                        } ${day ? 'cursor-pointer' : ''} ${today ? 'border-[#FF6B35] border-2' : 'border-[#F0F0F0]'
+                        }`}
                     >
                       {day && (
                         <>
@@ -347,9 +342,8 @@ export default function EventosPage() {
 
         {/* Side panel — desktop only */}
         <div
-          className={`hidden lg:block transition-all duration-300 ease-in-out self-stretch ${
-            selectedEvento ? 'w-80 opacity-100' : 'w-0 opacity-0 pointer-events-none'
-          }`}
+          className={`hidden lg:block transition-all duration-300 ease-in-out self-stretch ${selectedEvento ? 'w-80 opacity-100' : 'w-0 opacity-0 pointer-events-none'
+            }`}
         >
           <div className="w-80 h-full bg-white rounded-2xl border border-[#F0F0F0] overflow-y-auto">
             <div className="px-5 py-4 flex items-center justify-between border-b border-[#F0F0F0] sticky top-0 bg-white rounded-t-2xl z-10">
@@ -650,11 +644,10 @@ export default function EventosPage() {
       {/* Toast */}
       {toast && (
         <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold flex items-center gap-2.5 border transition-all ${
-            toast.type === 'success'
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold flex items-center gap-2.5 border transition-all ${toast.type === 'success'
               ? 'bg-green-50 border-green-500 text-green-600'
               : 'bg-red-50 border-red-500 text-red-600'
-          }`}
+            }`}
           style={{ animation: 'modalIn 0.2s ease-out' }}
         >
           {toast.type === 'success'

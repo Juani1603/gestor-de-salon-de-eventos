@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Plus, Trash2, Calendar, Users, DollarSign, X, ChevronRight, Sparkles, Star, Heart, Cake, Briefcase } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
+import { Plus, Trash2, Calendar, Users, DollarSign, X, ChevronRight, Sparkles, Star, Heart, Cake, Briefcase, Search } from 'lucide-react';
 import { cotizacionService } from '@/app/services/cotizacionService';
 import { Cotizacion, TipoEventoLabels } from '@/app/types';
 
@@ -17,6 +17,8 @@ export default function CotizacionesPage() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [busqueda, setBusqueda] = useState('');
+    const [soloSinEvento, setSoloSinEvento] = useState(false);
     const [formData, setFormData] = useState({
         nombreCliente: '',
         fechaEvento: '',
@@ -72,6 +74,14 @@ export default function CotizacionesPage() {
         alert(`Crear evento desde cotización ${cotizacionId}`);
     }
 
+    const cotizacionesFiltradas = useMemo(() => {
+        return cotizaciones.filter(c => {
+            const coincideBusqueda = c.nombreCliente.toLowerCase().includes(busqueda.toLowerCase());
+            const coincideSinEvento = soloSinEvento ? !c.eventoId : true;
+            return coincideBusqueda && coincideSinEvento;
+        });
+    }, [cotizaciones, busqueda, soloSinEvento]);
+
     const isFormValid = formData.nombreCliente && formData.fechaEvento && formData.cantidadInvitados && formData.precioPorInvitado;
 
     return (
@@ -93,7 +103,61 @@ export default function CotizacionesPage() {
                 </button>
             </div>
 
+            {/* Filtros */}
+            <div className="flex flex-col sm:flex-row gap-3">
+                {/* Búsqueda */}
+                <div className="relative flex-1">
+                    <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+                    <input
+                        type="text"
+                        value={busqueda}
+                        onChange={(e) => setBusqueda(e.target.value)}
+                        placeholder="Buscar por nombre de cliente..."
+                        className="w-full pl-9 pr-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all"
+                    />
+                    {busqueda && (
+                        <button
+                            onClick={() => setBusqueda('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#C4C4C4] hover:text-[#6B7280] transition-colors"
+                        >
+                            <X size={14} />
+                        </button>
+                    )}
+                </div>
 
+                {/* Checkbox sin evento */}
+                <label className="flex items-center gap-2.5 px-4 py-2.5 bg-white border border-[#EBEBEB] rounded-xl cursor-pointer hover:border-[#FFD4C2] hover:bg-[#FFFAF8] transition-all select-none shrink-0">
+                    <div className="relative flex items-center">
+                        <input
+                            type="checkbox"
+                            checked={soloSinEvento}
+                            onChange={(e) => setSoloSinEvento(e.target.checked)}
+                            className="sr-only"
+                        />
+                        <div className={`w-4 h-4 rounded flex items-center justify-center border-2 transition-all ${
+                            soloSinEvento
+                                ? 'border-[#FF6B35] bg-[#FF6B35]'
+                                : 'border-[#D1D5DB] bg-white'
+                        }`}>
+                            {soloSinEvento && (
+                                <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+                                    <path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            )}
+                        </div>
+                    </div>
+                    <span className="text-sm font-medium text-[#3C3C3C] whitespace-nowrap">Sin evento asignado</span>
+                </label>
+            </div>
+
+            {/* Contador de resultados si hay filtros activos */}
+            {(busqueda || soloSinEvento) && !loading && (
+                <p className="text-xs text-[#9CA3AF] -mt-3">
+                    {cotizacionesFiltradas.length === 0
+                        ? 'Sin resultados'
+                        : `${cotizacionesFiltradas.length} resultado${cotizacionesFiltradas.length !== 1 ? 's' : ''}`}
+                </p>
+            )}
 
             {/* List */}
             {loading ? (
@@ -117,9 +181,17 @@ export default function CotizacionesPage() {
                         Crear primera cotización
                     </button>
                 </div>
+            ) : cotizacionesFiltradas.length === 0 ? (
+                <div className="bg-white border border-dashed border-[#E8E8E8] rounded-2xl p-12 text-center">
+                    <div className="w-10 h-10 rounded-2xl bg-[#F5F5F5] flex items-center justify-center mx-auto mb-3">
+                        <Search size={18} className="text-[#9CA3AF]" />
+                    </div>
+                    <p className="text-[#3C3C3C] font-semibold mb-1">Sin resultados</p>
+                    <p className="text-[#9CA3AF] text-sm">Probá con otro nombre o ajustá los filtros</p>
+                </div>
             ) : (
                 <div className="space-y-2">
-                    {cotizaciones.map((cotizacion, index) => {
+                    {cotizacionesFiltradas.map((cotizacion, index) => {
                         const total = cotizacion.cantidadInvitados * cotizacion.precioPorInvitado;
                         const isDeleting = deletingId === cotizacion.id;
 
@@ -136,7 +208,6 @@ export default function CotizacionesPage() {
                             >
                                 {/* Left */}
                                 <div className="flex items-center gap-4 flex-1 min-w-0">
-                                    {/* Info */}
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                                             <h3 className="text-[15px] font-semibold text-[#1C1C1C] truncate">
@@ -166,7 +237,6 @@ export default function CotizacionesPage() {
 
                                 {/* Right: total + actions */}
                                 <div className="flex items-center gap-3 shrink-0">
-                                    {/* Total */}
                                     <div className="text-right hidden sm:block">
                                         <p className="text-xs text-[#9CA3AF] leading-none mb-0.5">Total</p>
                                         <p className="text-base font-bold text-[#1C1C1C]">
@@ -174,7 +244,6 @@ export default function CotizacionesPage() {
                                         </p>
                                     </div>
 
-                                    {/* Divider */}
                                     <div className="hidden sm:block w-px h-8 bg-[#F0F0F0]" />
 
                                     {!cotizacion.eventoId ? (
@@ -221,7 +290,6 @@ export default function CotizacionesPage() {
                         onClick={(e) => e.stopPropagation()}
                         style={{ animation: 'modalIn 0.2s ease-out' }}
                     >
-                        {/* Modal header */}
                         <div className="px-7 pt-7 pb-5 border-b border-[#F5F5F5]">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -237,21 +305,10 @@ export default function CotizacionesPage() {
                             </div>
                         </div>
 
-                        {/* Modal body */}
                         <div className="px-7 py-6 space-y-5">
                             {[
-                                {
-                                    label: 'Nombre del Cliente',
-                                    key: 'nombreCliente',
-                                    type: 'text',
-                                    placeholder: 'Ej: Juan Pérez',
-                                },
-                                {
-                                    label: 'Fecha del Evento',
-                                    key: 'fechaEvento',
-                                    type: 'date',
-                                    placeholder: '',
-                                },
+                                { label: 'Nombre del Cliente', key: 'nombreCliente', type: 'text', placeholder: 'Ej: Juan Pérez' },
+                                { label: 'Fecha del Evento', key: 'fechaEvento', type: 'date', placeholder: '' },
                             ].map(({ label, key, type, placeholder }) => (
                                 <div key={key}>
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">{label}</label>
@@ -316,7 +373,6 @@ export default function CotizacionesPage() {
                                 </div>
                             </div>
 
-                            {/* Live total preview */}
                             {formData.cantidadInvitados && formData.precioPorInvitado && (
                                 <div className="flex items-center justify-between px-4 py-3 bg-[#FFF4F0] rounded-xl border border-[#FFD4C2]">
                                     <span className="text-sm text-[#FF6B35] font-medium">Total estimado</span>
@@ -327,7 +383,6 @@ export default function CotizacionesPage() {
                             )}
                         </div>
 
-                        {/* Modal footer */}
                         <div className="px-7 pb-7 flex gap-3">
                             <button
                                 onClick={() => setShowModal(false)}
