@@ -1,8 +1,9 @@
-﻿using LogicaDeAplicacion.InterfacesCasosDeUso.ICotizacion;
+﻿using LogicaDeAplicacion.DTOs;
 using LogicaDeAplicacion.InterfacesCasosDeUso;
+using LogicaDeAplicacion.InterfacesCasosDeUso.ICotizacion;
+using LogicaDeAplicacion.InterfacesCasosDeUso.IEvento;
 using LogicaDeNegocio.Entidades;
 using Microsoft.AspNetCore.Mvc;
-using LogicaDeAplicacion.DTOs;
 
 namespace SalonEventos.API.Controllers
 {
@@ -13,15 +14,21 @@ namespace SalonEventos.API.Controllers
         private readonly IAltaCotizacion _altaCotizacion;
         private readonly IObtenerCotizaciones _obtenerCotizaciones;
         private readonly IObtenerCotizacionPorId _obtenerCotizacionPorId;
+        private readonly IEliminarCotizacion _eliminarCotizacion;
+        private readonly IActualizarEventoIdCotizacion _actualizarEventoIdCotizacion;
 
         public CotizacionController(
             IAltaCotizacion altaCotizacion,
             IObtenerCotizaciones obtenerCotizaciones,
-            IObtenerCotizacionPorId obtenerCotizacionPorId)
+            IObtenerCotizacionPorId obtenerCotizacionPorId,
+            IEliminarCotizacion eliminarCotizacion,
+            IActualizarEventoIdCotizacion actualizarEventoIdCotizacion  )
         {
             _altaCotizacion = altaCotizacion;
             _obtenerCotizaciones = obtenerCotizaciones;
             _obtenerCotizacionPorId = obtenerCotizacionPorId;
+            _eliminarCotizacion = eliminarCotizacion;
+            _actualizarEventoIdCotizacion = actualizarEventoIdCotizacion;
         }
 
         // POST: api/cotizacion
@@ -72,6 +79,36 @@ namespace SalonEventos.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { mensaje = ex.Message });
+            }
+        }
+
+        //DELETE: api/cotizacion/5
+        [HttpDelete("{id}")]
+        public ActionResult<CotizacionDTO> EliminarCotizacion(int id)
+        {
+            try
+            {
+                _eliminarCotizacion.EliminarCotizacion(id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+        }
+
+        // PATCH: api/cotizacion/5/evento
+        [HttpPatch("{id}/evento")]
+        public ActionResult ActualizarEventoId(int id, [FromBody] ActualizarEventoIdDTO dto)
+        {
+            try
+            {
+                _actualizarEventoIdCotizacion.ActualizarEventoId(id, dto.EventoId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
             }
         }
     }

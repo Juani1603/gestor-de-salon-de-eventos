@@ -1,5 +1,6 @@
 ﻿using LogicaDeAplicacion.DTOs;
 using LogicaDeAplicacion.InterfacesCasosDeUso.IEvento;
+using LogicaDeAplicacion.Mappers;
 using LogicaDeNegocio.Entidades;
 using Microsoft.AspNetCore.Mvc;
 
@@ -108,8 +109,8 @@ namespace SalonEventos.API.Controllers
         {
             try
             {
-                _altaEvento.AltaEvento(evento);
-                return Ok();
+                EventoDTO dtoRetorno = _altaEvento.AltaEvento(evento);
+                return Ok(dtoRetorno);
             }
             catch (Exception ex)
             {

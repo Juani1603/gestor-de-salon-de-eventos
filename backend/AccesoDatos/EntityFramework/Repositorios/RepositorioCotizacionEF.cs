@@ -54,5 +54,19 @@ namespace AccesoDatos.EntityFramework.Repositorios
             _context.Cotizaciones.Update(obj);
             _context.SaveChanges();
         }
+
+        public void ActualizarEventoId(int idCotizacion, int? idEvento)
+        {
+            Cotizacion cotizacion = _context.Cotizaciones
+                                    .Where(c => c.Id == idCotizacion).FirstOrDefault();
+
+            if (cotizacion == null)
+            {
+                throw new CotizacionException("No se encontró una cotización con ese Id");
+            }
+
+            cotizacion.EventoId = idEvento;
+            _context.SaveChanges();
+        }
     }
 }

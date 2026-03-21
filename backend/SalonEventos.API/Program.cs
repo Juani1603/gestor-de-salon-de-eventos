@@ -36,6 +36,8 @@ namespace SalonEventos.API
             builder.Services.AddScoped<IAltaCotizacion, AltaCotizacionCU>();
             builder.Services.AddScoped<IObtenerCotizaciones, ObtenerCotizacionesCU>();
             builder.Services.AddScoped<IObtenerCotizacionPorId, ObtenerCotizacionPorIdCU>();
+            builder.Services.AddScoped<IEliminarCotizacion, EliminarCotizacionCU>();
+            builder.Services.AddScoped<IActualizarEventoIdCotizacion, ActualizarEventoIdCotizacionCU>();
 
             //Evento
             builder.Services.AddScoped<IObtenerEventoPorId, ObtenerEventoPorIdCU>();

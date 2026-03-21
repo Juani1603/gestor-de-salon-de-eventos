@@ -9,5 +9,6 @@ namespace LogicaDeNegocio.InterfacesRepositorio
 {
     public interface ICotizacionRepositorio : IRepositorio<Cotizacion>
     {
+        public void ActualizarEventoId(int idCotizacion, int? idEvento);
     }
 }

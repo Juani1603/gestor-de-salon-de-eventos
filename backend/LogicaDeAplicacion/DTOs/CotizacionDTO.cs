@@ -11,28 +11,12 @@ namespace LogicaDeAplicacion.DTOs
     public class CotizacionDTO
     {
         public int Id { get; set; }
-
-        [Required]
-        [MaxLength(200)]
         public string NombreCliente { get; set; }
-
-        [Required]
         public DateTime FechaEvento { get; set; }
-
-        [Required]
         public TipoEvento TipoEvento { get; set; }
-
-        [Required]
-        [Range(1, int.MaxValue)]
         public int CantidadInvitados { get; set; }
-
-        [Required]
-        [Range(0, double.MaxValue)]
         public decimal PrecioPorInvitado { get; set; }
-
-        [Required]
         public DateTime FechaCreacion { get; set; }
-
         public int? EventoId { get; set; }
     }
 }

@@ -47,4 +47,20 @@ export const apiClient = {
     return text ? (JSON.parse(text) as T) : null;
   },
 
+  async patch<T>(endpoint: string, data: any): Promise<T | null> {
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => null);
+    throw new Error(errorBody?.mensaje ?? response.statusText);
+  }
+
+  const text = await response.text();
+  return text ? (JSON.parse(text) as T) : null;
+},
+
 };

@@ -10,6 +10,6 @@ namespace LogicaDeAplicacion.InterfacesCasosDeUso.IEvento
 {
     public interface IAltaEvento
     {
-        void AltaEvento(EventoDTO evento);
+        EventoDTO AltaEvento(EventoDTO evento);
     }
 }

@@ -21,11 +21,14 @@ export const cotizacionService = {
   },
 
   async crearCotizacion(cotizacion: Omit<Cotizacion, 'id' | 'fechaCreacion' | 'eventoId'>): Promise<Cotizacion | null> {
-    try {
-      return await apiClient.post<Cotizacion>('/cotizacion', cotizacion);
-    } catch (error) {
-      console.error('Error al crear cotización:', error);
-      return null;
-    }
+    return await apiClient.post<Cotizacion>('/cotizacion', cotizacion);
   },
+
+  async eliminarCotizacion(id: number): Promise<void> {
+    await apiClient.delete(`/cotizacion/${id}`);
+  },
+
+  async actualizarEventoId(cotizacionId: number, eventoId: number | null): Promise<void> {
+  await apiClient.patch(`/cotizacion/${cotizacionId}/evento`, { eventoId });
+},
 };

@@ -19,9 +19,11 @@ namespace LogicaDeAplicacion.CasosDeUso.EventoCU
             _repositorio = repositorio;
         }
 
-        public void AltaEvento(EventoDTO evento)
+        public EventoDTO AltaEvento(EventoDTO evento)
         {
-            _repositorio.Add(EventoMapper.FromDTO(evento));
+            Evento eventoMappeado = EventoMapper.FromDTO(evento);
+            _repositorio.Add(eventoMappeado);
+            return EventoMapper.ToDTO(eventoMappeado);
         }
     }
 }
