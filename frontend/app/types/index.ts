@@ -43,6 +43,7 @@ export interface Reunion {
   cotizacionId: number;
   nombreCliente: string;
   fechaHora: string; 
+  fechaCreacion: string;
 }
 
 // Helpers para labels
