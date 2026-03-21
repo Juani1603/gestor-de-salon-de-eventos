@@ -10,6 +10,6 @@ namespace LogicaDeAplicacion.InterfacesCasosDeUso.ICotizacion
 {
     public interface IAltaCotizacion
     {
-        void AltaCotizacion(CotizacionDTO cotizacion);
+        public CotizacionDTO AltaCotizacion(CotizacionDTO cotizacionDto);
     }
 }

@@ -38,8 +38,8 @@ namespace SalonEventos.API.Controllers
             try
             {
                 cotizacion.FechaCreacion = DateTime.Now;
-                _altaCotizacion.AltaCotizacion(cotizacion);
-                return CreatedAtAction(nameof(ObtenerPorId), new { id = cotizacion.Id }, cotizacion);
+                CotizacionDTO retorno = _altaCotizacion.AltaCotizacion(cotizacion);
+                return Ok(retorno);
             }
             catch (Exception ex)
             {

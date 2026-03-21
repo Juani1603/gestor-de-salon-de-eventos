@@ -44,7 +44,17 @@ namespace AccesoDatos.EntityFramework.Repositorios
 
         public void Remove(int id)
         {
-            Evento evento = new Evento { Id = id };
+            Evento evento = _context.Eventos.FirstOrDefault(e => e.Id == id);
+            if (evento == null) throw new Exception("Evento no encontrado.");
+
+            // Si tiene cotización asociada, limpiar el vínculo
+            if (evento.CotizacionId.HasValue)
+            {
+                Cotizacion cotizacion = _context.Cotizaciones.FirstOrDefault(c => c.Id == evento.CotizacionId.Value);
+                if (cotizacion != null)
+                    cotizacion.EventoId = null;
+            }
+
             _context.Eventos.Remove(evento);
             _context.SaveChanges();
         }

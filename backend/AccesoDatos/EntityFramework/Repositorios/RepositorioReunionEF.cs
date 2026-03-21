@@ -43,7 +43,8 @@ namespace AccesoDatos.EntityFramework.Repositorios
 
         public void Remove(int id)
         {
-            Reunion reunion = new Reunion { Id = id };
+            Reunion reunion = _context.Reuniones.FirstOrDefault(r => r.Id == id);
+            if (reunion == null) throw new Exception("Reunión no encontrada.");
             _context.Reuniones.Remove(reunion);
             _context.SaveChanges();
         }

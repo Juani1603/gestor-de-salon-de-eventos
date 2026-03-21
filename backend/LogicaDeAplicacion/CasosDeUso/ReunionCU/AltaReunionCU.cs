@@ -1,4 +1,6 @@
-﻿using LogicaDeAplicacion.InterfacesCasosDeUso.IReunion;
+﻿using LogicaDeAplicacion.DTOs;
+using LogicaDeAplicacion.InterfacesCasosDeUso.IReunion;
+using LogicaDeAplicacion.Mappers;
 using LogicaDeNegocio.Entidades;
 using LogicaDeNegocio.InterfacesRepositorio;
 using System;
@@ -17,9 +19,11 @@ namespace LogicaDeAplicacion.CasosDeUso.ReunionCU
             _repositorio = repositorio;
         }
 
-        public void AltaReunion(Reunion reunion)
+        public ReunionDTO AltaReunion(ReunionDTO reunionDto)
         {
+            Reunion reunion = ReunionMapper.FromDTO(reunionDto);
             _repositorio.Add(reunion);
+            return ReunionMapper.ToDTO(reunion);
         }
     }
 }

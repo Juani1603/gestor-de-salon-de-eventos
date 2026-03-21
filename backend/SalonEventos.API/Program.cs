@@ -51,7 +51,6 @@ namespace SalonEventos.API
             builder.Services.AddScoped<IAltaReunion, AltaReunionCU>();
             builder.Services.AddScoped<IBajaReunion, BajaReunionCU>();
             builder.Services.AddScoped<IObtenerReunionesDelMes, ObtenerReunionesDelMesCU>();
-            builder.Services.AddScoped<IObtenerReunionesPorFecha, ObtenerReunionesPorFechaCU>();
             builder.Services.AddScoped<IObtenerReunionProxima, ObtenerReunionProximaCU>();
 
             // Servicios

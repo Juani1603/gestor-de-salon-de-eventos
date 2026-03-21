@@ -19,9 +19,11 @@ namespace LogicaDeAplicacion.CasosDeUso.CotizacionCU
             _repositorio = repositorio;
         }
 
-        public void AltaCotizacion(CotizacionDTO cotizacion)
+        public CotizacionDTO AltaCotizacion(CotizacionDTO cotizacionDto)
         {
-            _repositorio.Add(CotizacionMapper.FromDTO(cotizacion));
+            Cotizacion cotizacion = CotizacionMapper.FromDTO(cotizacionDto);
+            _repositorio.Add(cotizacion);
+            return CotizacionMapper.ToDTO(cotizacion);
         }
     }
 }

@@ -11,6 +11,5 @@ namespace LogicaDeNegocio.InterfacesRepositorio
     {
         Reunion ObtenerReunionProxima();
         IEnumerable<Reunion> ObtenerReunionesDelMes(int mes, int anio);
-        IEnumerable<Reunion> ObtenerReunionesPorFecha(DateTime fechaReunion);
     }
 }

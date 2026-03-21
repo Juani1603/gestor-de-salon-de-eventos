@@ -44,7 +44,8 @@ namespace AccesoDatos.EntityFramework.Repositorios
 
         public void Remove(int id)
         {
-            Cotizacion cotizacion = new Cotizacion { Id = id };
+            Cotizacion cotizacion = _context.Cotizaciones.FirstOrDefault(c => c.Id == id);
+            if (cotizacion == null) throw new CotizacionException("Cotización no encontrada");
             _context.Cotizaciones.Remove(cotizacion);
             _context.SaveChanges(); 
         }
