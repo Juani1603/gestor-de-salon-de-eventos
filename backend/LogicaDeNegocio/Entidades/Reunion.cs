@@ -1,4 +1,5 @@
-﻿using LogicaDeNegocio.Interfaces;
+﻿using LogicaDeNegocio.Exceptions;
+using LogicaDeNegocio.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -13,7 +14,7 @@ namespace LogicaDeNegocio.Entidades
     {
         public int Id { get; set; }
         [Required]
-        public int CotizacionId { get; set; }
+        public int? CotizacionId { get; set; }
         [ForeignKey(nameof(CotizacionId))]
         public Cotizacion? Cotizacion { get; set; }
         [Required]
@@ -37,7 +38,18 @@ namespace LogicaDeNegocio.Entidades
 
         public void Validar()
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(this.NombreCliente))
+            {
+                throw new ReunionException("El nombre del cliente no puede estar vacío");
+            }
+            if (this.FechaHora == DateTime.MinValue)
+            {
+                throw new ReunionException("La fecha es obligatoria");
+            }
+            if (this.FechaHora < DateTime.Now)
+            {
+                throw new ReunionException("La fecha y hora de la reunión no puede ser anterior a la actual");
+            }
         }
     }
 }

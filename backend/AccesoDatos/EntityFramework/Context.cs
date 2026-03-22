@@ -41,6 +41,10 @@ namespace AccesoDatos.EntityFramework
             modelBuilder.Entity<Evento>()
                 .Property(e => e.PlanificacionId)
                 .IsRequired(false);
+
+            modelBuilder.Entity<Reunion>()
+                .Property(r => r.CotizacionId)
+                .IsRequired(false);
         }
     }
 }

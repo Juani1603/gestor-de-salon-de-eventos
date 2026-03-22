@@ -67,7 +67,7 @@ namespace AccesoDatos.EntityFramework.Repositorios
         public Evento? ObtenerEventoProximo()
         {
             return _context.Eventos
-            .Where(e => e.FechaEvento >= DateTime.Now)
+            .Where(e => e.FechaEvento >= DateTime.Today)
             .OrderBy(e => e.FechaEvento)
             .FirstOrDefault();
         }

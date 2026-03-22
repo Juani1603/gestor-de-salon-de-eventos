@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { Evento, TipoEventoLabels } from '@/app/types';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Star, Heart, Cake, Briefcase, Users } from 'lucide-react';
 
 interface MiniCalendarProps {
   eventos: Evento[];
@@ -14,7 +15,7 @@ interface TooltipState {
   day: number;
   x: number;
   y: number;
-} 
+}
 
 const DAYS = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
 const MONTHS = [
@@ -23,6 +24,13 @@ const MONTHS = [
 ];
 
 const TOOLTIP_WIDTH = 224;
+
+const TIPO_EVENTO_ICONS: Record<number, React.ReactNode> = {
+  0: <Star size={11} />,
+  1: <Heart size={11} />,
+  2: <Cake size={11} />,
+  3: <Briefcase size={11} />,
+};
 
 function Tooltip({
   tooltip,
@@ -75,10 +83,12 @@ function Tooltip({
                 <p className="text-sm font-semibold text-[#3C3C3C] truncate">
                   {evento.nombreCliente}
                 </p>
-                <p className="text-xs text-[#9CA3AF] mt-0.5">
+                <p className="text-xs text-[#9CA3AF] mt-0.5 flex items-center gap-1">
+                  {TIPO_EVENTO_ICONS[evento.tipoEvento]}
                   {TipoEventoLabels[evento.tipoEvento]}
                 </p>
-                <p className="text-xs text-[#9CA3AF] mt-0.5">
+                <p className="text-xs text-[#9CA3AF] mt-0.5 flex items-center gap-1">
+                  <Users size={11} />
                   {evento.cantidadInvitados} invitados
                 </p>
               </div>

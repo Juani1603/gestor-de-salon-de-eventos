@@ -40,7 +40,7 @@ export interface Cotizacion {
 
 export interface Reunion {
   id: number;
-  cotizacionId: number;
+  cotizacionId: number | null;
   nombreCliente: string;
   fechaHora: string; 
   fechaCreacion: string;

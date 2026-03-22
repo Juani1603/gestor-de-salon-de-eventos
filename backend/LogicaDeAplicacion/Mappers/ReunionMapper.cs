@@ -15,7 +15,7 @@ namespace LogicaDeAplicacion.Mappers
             return new Reunion
             {
                 Id = dto.Id,
-                CotizacionId = dto.CotizacionId,
+                CotizacionId = dto.CotizacionId == 0 ? null : dto.CotizacionId,
                 NombreCliente = dto.NombreCliente,
                 FechaHora = dto.FechaHora,
                 FechaCreacion = dto.FechaCreacion,

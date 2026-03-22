@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { eventoService } from '@/app/services/eventoService';
-import { Evento, TipoEventoLabels, EstadoEventoLabels } from '@/app/types';
+import { reunionService } from '@/app/services/reunionService';
+import { cotizacionService } from '@/app/services/cotizacionService';
+import { Evento, Reunion, Cotizacion, TipoEventoLabels, EstadoEventoLabels } from '@/app/types';
 import MiniCalendar from '@/app/components/MiniCalendar';
 import { motion } from 'framer-motion';
-import { Calendar, Users, FileText, Clock, ChevronRight, Sparkles } from 'lucide-react';
+import { Calendar, Users, FileText, Clock, ChevronRight } from 'lucide-react';
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 16 },
@@ -16,6 +19,9 @@ const fadeUp = (delay = 0) => ({
 export default function DashboardPage() {
   const [eventoProximo, setEventoProximo] = useState<Evento | null>(null);
   const [eventosDelMes, setEventosDelMes] = useState<Evento[]>([]);
+  const [reunionProxima, setReunionProxima] = useState<Reunion | null>(null);
+  const [reunionesDelMes, setReunionesDelMes] = useState<Reunion[]>([]);
+  const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
   const [loading, setLoading] = useState(true);
 
   const now = new Date();
@@ -27,12 +33,18 @@ export default function DashboardPage() {
       try {
         const mes = now.getMonth() + 1;
         const anio = now.getFullYear();
-        const [proximo, eventos] = await Promise.all([
+        const [proximo, eventos, reunion, reuniones, cots] = await Promise.all([
           eventoService.obtenerEventoProximo(),
           eventoService.obtenerEventosDelMes(mes, anio),
+          reunionService.obtenerReunionProxima(),
+          reunionService.obtenerReunionesDelMes(mes, anio),
+          cotizacionService.obtenerCotizaciones(),
         ]);
         setEventoProximo(proximo);
         setEventosDelMes(eventos);
+        setReunionProxima(reunion);
+        setReunionesDelMes(reuniones);
+        setCotizaciones(cots);
       } catch (error) {
         console.error('Error cargando dashboard:', error);
       } finally {
@@ -57,6 +69,26 @@ export default function DashboardPage() {
     ? Math.ceil((new Date(eventoProximo.fechaEvento).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : null;
 
+  // Cotizaciones sin evento asignado
+  const cotizacionesPendientes = cotizaciones.filter(c => !c.eventoId).length;
+
+  // Reuniones del mes vigentes (desde hoy)
+  const hoyCalendario = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const reunionesDelMesVigentes = reunionesDelMes.filter(r => new Date(r.fechaHora) >= hoyCalendario).length;
+
+  // Formateamos la próxima reunión
+  const reunionProximaFormateada = reunionProxima
+    ? (() => {
+      const fecha = new Date(reunionProxima.fechaHora);
+      const hoyStr = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const fechaStr = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()).getTime();
+      const esHoy = hoyStr === fechaStr;
+      const hora = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      const diaLabel = esHoy ? 'Hoy' : fecha.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short' });
+      return { hora, diaLabel, esHoy };
+    })()
+    : null;
+
   return (
     <div className="space-y-6">
 
@@ -71,17 +103,16 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* Top row: Próximo evento hero + Reunión + Calendario */}
+      {/* Top row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-        {/* Card 1 — Próximo Evento (hero con gradiente) */}
+        {/* Card 1 — Próximo Evento */}
         <motion.div
           {...fadeUp(0.08)}
           whileHover={{ y: -3, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
           className="relative rounded-2xl overflow-hidden min-h-[200px] flex flex-col"
           style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}
         >
-          {/* Texture rings */}
           <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full border border-white/10 pointer-events-none" />
           <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full border border-white/10 pointer-events-none" />
           <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full border border-white/10 pointer-events-none" />
@@ -98,16 +129,13 @@ export default function DashboardPage() {
 
             {eventoProximo ? (
               <div className="flex-1 flex flex-col">
-                <p className="text-2xl font-bold text-white mb-1 leading-tight">
-                  {eventoProximo.nombreCliente}
-                </p>
+                <p className="text-2xl font-bold text-white mb-1 leading-tight">{eventoProximo.nombreCliente}</p>
                 <p className="text-sm text-white/75 mb-0.5">
-                  {new Date(eventoProximo.fechaEvento).toLocaleDateString('es-ES', {
+                  {new Date(eventoProximo.fechaEvento.split('T')[0] + 'T00:00:00').toLocaleDateString('es-ES', {
                     day: 'numeric', month: 'long', year: 'numeric',
                   })}
                 </p>
                 <p className="text-xs text-white/60">{TipoEventoLabels[eventoProximo.tipoEvento]}</p>
-
                 <div className="mt-auto pt-4 border-t border-white/20 flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-white/75 text-xs">
                     <Users size={11} />
@@ -134,24 +162,30 @@ export default function DashboardPage() {
         >
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF]">Próxima Reunión</span>
-            <span className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-lg font-medium">Agendada</span>
+            {reunionProxima && (
+              <span className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-lg font-medium">
+                {reunionProximaFormateada?.esHoy ? 'Hoy' : 'Agendada'}
+              </span>
+            )}
           </div>
 
           <div className="flex-1 flex flex-col">
-            <p className="text-2xl font-bold text-[#1C1C1C] mb-1">María López</p>
-            <div className="flex items-center gap-1.5 text-sm text-[#6B7280]">
-              <Clock size={13} />
-              Hoy, 14:00 hs
-            </div>
-
-            <div className="mt-auto pt-4 border-t border-[#F5F5F5] flex items-center justify-between">
-              <p className="text-xs text-[#9CA3AF]">Visita al salón</p>
-              <button
-                className="flex items-center gap-1 text-xs font-semibold text-[#FF6B35] hover:gap-2 transition-all"
-              >
-                Ver <ChevronRight size={12} />
-              </button>
-            </div>
+            {reunionProxima ? (
+              <>
+                <p className="text-2xl font-bold text-[#1C1C1C] mb-1">{reunionProxima.nombreCliente}</p>
+                <div className="flex items-center gap-1.5 text-sm text-[#6B7280]">
+                  <Clock size={13} />
+                  {reunionProximaFormateada?.diaLabel}, {reunionProximaFormateada?.hora}hs
+                </div>
+                <div className="mt-auto pt-4 border-t border-[#F5F5F5] flex items-center justify-between">
+                  <Link href="/reuniones" className="flex items-center gap-1 text-xs font-semibold text-[#FF6B35] hover:gap-2 transition-all">
+                    Ver <ChevronRight size={12} />
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <p className="text-[#9CA3AF] text-sm mt-2">No hay reuniones próximas</p>
+            )}
           </div>
         </motion.div>
 
@@ -175,15 +209,15 @@ export default function DashboardPage() {
           },
           {
             icon: <Clock size={18} />,
-            value: 12,
+            value: reunionesDelMesVigentes,
             label: 'Reuniones',
             sub: 'este mes',
           },
           {
             icon: <FileText size={18} />,
-            value: 5,
+            value: cotizacionesPendientes,
             label: 'Cotizaciones',
-            sub: 'pendientes',
+            sub: 'sin evento asignado',
           },
         ].map((stat, i) => (
           <motion.div
@@ -192,7 +226,6 @@ export default function DashboardPage() {
             whileHover={{ y: -2, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
             className="bg-white border border-[#F0F0F0] rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-[#FFD4C2] hover:shadow-md transition-all duration-200"
           >
-            {/* Icon ring */}
             <div className="w-12 h-12 rounded-xl bg-[#FFF4F0] flex items-center justify-center shrink-0 text-[#FF6B35]">
               {stat.icon}
             </div>
