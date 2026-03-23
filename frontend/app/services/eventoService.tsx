@@ -47,4 +47,8 @@ export const eventoService = {
   async eliminarEvento(id: number): Promise<void> {
     await apiClient.delete(`/evento/${id}`);
   },
+
+  async editarEvento(evento: Evento): Promise<Evento | null> {
+  return await apiClient.put<Evento>(`/evento/${evento.id}`, evento);
+},
 };

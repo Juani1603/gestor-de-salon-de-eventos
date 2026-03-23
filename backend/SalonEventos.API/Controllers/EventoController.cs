@@ -16,6 +16,7 @@ namespace SalonEventos.API.Controllers
         private readonly IObtenerEventosEntreFechas _obtenerEventosEntreFechas;
         private readonly IAltaEvento _altaEvento;
         private readonly IEliminarEvento _eliminarEvento;
+        private readonly IEditarEvento _editarEvento;
 
         public EventoController(
             IObtenerEventoPorId obtenerEventoPorId,
@@ -23,7 +24,8 @@ namespace SalonEventos.API.Controllers
             IObtenerEventosDelMes obtenerEventosDelMes,
             IObtenerEventosEntreFechas obtenerEventosEntreFechas,
             IAltaEvento altaEvento,
-            IEliminarEvento eliminarEvento)
+            IEliminarEvento eliminarEvento,
+            IEditarEvento editarEvento)
         {
             _obtenerEventoPorId = obtenerEventoPorId;
             _obtenerEventoProximo = obtenerEventoProximo;
@@ -31,6 +33,7 @@ namespace SalonEventos.API.Controllers
             _obtenerEventosEntreFechas = obtenerEventosEntreFechas;
             _altaEvento = altaEvento;
             _eliminarEvento = eliminarEvento;
+            _editarEvento = editarEvento;
         }
 
         // GET: api/evento/proximo
@@ -126,6 +129,24 @@ namespace SalonEventos.API.Controllers
             {
                 _eliminarEvento.EliminarEvento(id);               
                 return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+        }
+
+        // PUT: api/evento/5
+        [HttpPut("{id}")]
+        public ActionResult<EventoDTO> EditarEvento(int id, [FromBody] EventoDTO dto)
+        {
+            try
+            {
+                if (id != dto.Id)
+                    return BadRequest(new { mensaje = "El ID de la URL no coincide con el del cuerpo." });
+
+                var resultado = _editarEvento.EditarEvento(dto);
+                return Ok(resultado);
             }
             catch (Exception ex)
             {

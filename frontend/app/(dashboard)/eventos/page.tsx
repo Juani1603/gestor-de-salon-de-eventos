@@ -75,7 +75,6 @@ function SelectCustom({
   );
 }
 
-// Lee el eventoId del localStorage antes de inicializar estados
 const getInitialEventoId = (): number | null => {
   if (typeof window === 'undefined') return null;
   const stored = localStorage.getItem('eventoSeleccionado');
@@ -99,6 +98,9 @@ export default function EventosPage() {
   const [loading, setLoading] = useState(true);
   const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [eventoAEditar, setEventoAEditar] = useState<Evento | null>(null);
+  const [editFormData, setEditFormData] = useState(FORM_INITIAL);
+  const [editando, setEditando] = useState(false);
   const [formData, setFormData] = useState(FORM_INITIAL);
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
@@ -114,7 +116,6 @@ export default function EventosPage() {
     cargarEventosDelMes();
   }, [currentMonth, currentYear]);
 
-  // Si hay un eventoId pendiente, lo buscamos por id, navegamos al mes correcto y lo seleccionamos
   useEffect(() => {
     if (!pendingEventoId) return;
     async function cargarYSeleccionar() {
@@ -171,6 +172,46 @@ export default function EventosPage() {
     }
   }
 
+  function abrirModalEdicion(evento: Evento) {
+    setEventoAEditar(evento);
+    setEditFormData({
+      nombreCliente: evento.nombreCliente,
+      fechaEvento: evento.fechaEvento.split('T')[0],
+      tipoEvento: evento.tipoEvento,
+      cantidadInvitados: String(evento.cantidadInvitados),
+      precioPorInvitado: String(evento.precioPorInvitado),
+      estadoEvento: evento.estadoEvento,
+    });
+  }
+
+  async function handleEditarEvento() {
+    if (!eventoAEditar) return;
+    try {
+      setEditando(true);
+      const eventoEditado: Evento = {
+        ...eventoAEditar,
+        nombreCliente: editFormData.nombreCliente,
+        fechaEvento: editFormData.fechaEvento,
+        tipoEvento: editFormData.tipoEvento,
+        cantidadInvitados: parseInt(editFormData.cantidadInvitados),
+        precioPorInvitado: parseFloat(editFormData.precioPorInvitado),
+        estadoEvento: editFormData.estadoEvento,
+      };
+
+      const resultado = await eventoService.editarEvento(eventoEditado);
+      if (resultado) {
+        setSelectedEvento(resultado);
+        setEventoAEditar(null);
+        cargarEventosDelMes();
+        showToast('Evento actualizado correctamente', 'success');
+      }
+    } catch (error: any) {
+      showToast(error?.message ?? 'Error al editar el evento', 'error');
+    } finally {
+      setEditando(false);
+    }
+  }
+
   async function handleEliminarEvento() {
     if (!eventoAEliminar) return;
     try {
@@ -194,6 +235,7 @@ export default function EventosPage() {
   }
 
   const isFormValid = formData.nombreCliente && formData.fechaEvento && formData.cantidadInvitados && formData.precioPorInvitado;
+  const isEditFormValid = editFormData.nombreCliente && editFormData.fechaEvento && editFormData.cantidadInvitados && editFormData.precioPorInvitado;
 
   const prevMonth = () => {
     if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(currentYear - 1); }
@@ -425,7 +467,9 @@ export default function EventosPage() {
                     <button className="w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-orange-200 active:scale-95" style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}>
                       Ver Planificación
                     </button>
-                    <button className="w-full px-4 py-2.5 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors">
+                    <button
+                      onClick={() => abrirModalEdicion(selectedEvento)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors">
                       Editar Evento
                     </button>
                   </div>
@@ -484,7 +528,9 @@ export default function EventosPage() {
                   <button className="w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-orange-200 active:scale-95" style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}>
                     Ver Planificación
                   </button>
-                  <button className="w-full px-4 py-2.5 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors">
+                  <button
+                    onClick={() => abrirModalEdicion(selectedEvento)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors">
                     Editar Evento
                   </button>
                 </div>
@@ -566,6 +612,96 @@ export default function EventosPage() {
                   className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-orange-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
                   style={{ background: isFormValid ? 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' : '#E5E7EB' }}>
                   Crear Evento
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Editar Evento */}
+        {eventoAEditar && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" style={{ minHeight: '100dvh' }} onClick={() => !editando && setEventoAEditar(null)}>
+            <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} style={{ animation: 'modalIn 0.2s ease-out' }}>
+              <div className="px-7 pt-7 pb-5 border-b border-[#F5F5F5]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-[#1C1C1C]">Editar Evento</h2>
+                    <p className="text-[#9CA3AF] text-sm mt-0.5">Modificá los detalles del evento</p>
+                  </div>
+                  <button onClick={() => setEventoAEditar(null)} disabled={editando}
+                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F5F5F5] hover:bg-[#EBEBEB] transition-colors disabled:opacity-50">
+                    <X size={16} className="text-[#6B7280]" />
+                  </button>
+                </div>
+              </div>
+              <div className="px-7 py-6 space-y-5">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Nombre del Cliente</label>
+                  <input type="text" value={editFormData.nombreCliente}
+                    onChange={(e) => setEditFormData({ ...editFormData, nombreCliente: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all"
+                    placeholder="Ej: Juan Pérez" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Fecha del Evento</label>
+                  <DatePicker value={editFormData.fechaEvento} onChange={(val) => setEditFormData({ ...editFormData, fechaEvento: val })} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Tipo de Evento</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {TIPO_EVENTO_OPTIONS.map((opt) => (
+                      <button key={opt.value} type="button"
+                        onClick={() => setEditFormData({ ...editFormData, tipoEvento: opt.value })}
+                        className="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-medium transition-all"
+                        style={editFormData.tipoEvento === opt.value
+                          ? { borderColor: '#FF6B35', background: '#FFF4F0', color: '#FF6B35' }
+                          : { borderColor: '#EBEBEB', background: 'white', color: '#6B7280' }}>
+                        {opt.icon}{opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Estado</label>
+                  <SelectCustom value={editFormData.estadoEvento}
+                    onChange={(val) => setEditFormData({ ...editFormData, estadoEvento: val })}
+                    options={Object.entries(EstadoEventoLabels).map(([value, label]) => ({ value: parseInt(value), label: label as string }))}
+                    className="w-full" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Invitados</label>
+                    <input type="number" value={editFormData.cantidadInvitados}
+                      onChange={(e) => setEditFormData({ ...editFormData, cantidadInvitados: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all"
+                      placeholder="100" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Precio / persona</label>
+                    <input type="number" step="0.01" value={editFormData.precioPorInvitado}
+                      onChange={(e) => setEditFormData({ ...editFormData, precioPorInvitado: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all"
+                      placeholder="75.00" />
+                  </div>
+                </div>
+                {editFormData.cantidadInvitados && editFormData.precioPorInvitado && (
+                  <div className="flex items-center justify-between px-4 py-3 bg-[#FFF4F0] rounded-xl border border-[#FFD4C2]">
+                    <span className="text-sm text-[#FF6B35] font-medium">Total estimado</span>
+                    <span className="text-base font-bold text-[#FF6B35]">
+                      ${(parseInt(editFormData.cantidadInvitados || '0') * parseFloat(editFormData.precioPorInvitado || '0')).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="px-7 pb-7 flex gap-3">
+                <button onClick={() => setEventoAEditar(null)} disabled={editando}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors disabled:opacity-50">
+                  Cancelar
+                </button>
+                <button onClick={handleEditarEvento} disabled={!isEditFormValid || editando}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-orange-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+                  style={{ background: isEditFormValid ? 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' : '#E5E7EB' }}>
+                  {editando ? 'Guardando...' : 'Guardar cambios'}
                 </button>
               </div>
             </div>
