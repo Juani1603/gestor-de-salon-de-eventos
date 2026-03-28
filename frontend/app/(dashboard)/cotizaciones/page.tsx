@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Trash2, Calendar, Users, DollarSign, X, ChevronRight, Sparkles, Star, Heart, Cake, Briefcase, Search, CheckCircle, AlertCircle, AlertTriangle, ArrowUpRight } from 'lucide-react';
+import { Plus, Trash2, Calendar, Users, DollarSign, X, ChevronRight, Sparkles, Star, Heart, Cake, Briefcase, Search, CheckCircle, AlertCircle, AlertTriangle, ArrowUpRight, CalendarClock, Clock, User, ChevronDown } from 'lucide-react';
 import { cotizacionService } from '@/app/services/cotizacionService';
 import { eventoService } from '@/app/services/eventoService';
+import { reunionService } from '@/app/services/reunionService';
 import { Cotizacion, Evento, TipoEventoLabels, EstadoEventoLabels } from '@/app/types';
 import DatePicker from '@/app/components/DatePicker';
 import PageTransition from '@/app/components/PageTransition';
@@ -16,6 +17,52 @@ const TIPO_EVENTO_OPTIONS = [
     { value: 3, label: 'Empresarial', icon: <Briefcase size={15} /> },
 ];
 
+const HORAS_REUNION = Array.from({ length: 16 }, (_, i) => String(i + 7).padStart(2, '0'));
+const MINUTOS_REUNION = ['00', '15', '30', '45'];
+
+function TimeSelect({
+    value,
+    onChange,
+    options,
+    suffix = '',
+}: {
+    value: string;
+    onChange: (val: string) => void;
+    options: string[];
+    suffix?: string;
+}) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    return (
+        <div ref={ref} className="relative flex-1">
+            <button type="button" onClick={() => setOpen(!open)}
+                className={`w-full flex items-center justify-between gap-2 px-4 py-2.5 border rounded-xl text-sm bg-white transition-all focus:outline-none ${open ? 'border-[#FF6B35] ring-2 ring-[#FF6B35]/30' : 'border-[#EBEBEB] hover:border-[#FF6B35]/50'}`}>
+                <span className="text-[#1C1C1C] font-medium">{value}{suffix}</span>
+                <ChevronDown size={14} className={`text-[#9CA3AF] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+            </button>
+            {open && (
+                <div className="absolute top-full left-0 mt-1.5 bg-white border border-[#EBEBEB] rounded-xl shadow-lg z-50 py-1 w-full max-h-48 overflow-y-auto">
+                    {options.map(opt => (
+                        <button key={opt} type="button" onClick={() => { onChange(opt); setOpen(false); }}
+                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${opt === value ? 'bg-[#FFF4F0] text-[#FF6B35] font-semibold' : 'text-[#3C3C3C] hover:bg-[#FFF4F0] hover:text-[#FF6B35]'}`}>
+                            {opt}{suffix}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 export default function CotizacionesPage() {
     const router = useRouter();
 
@@ -24,12 +71,17 @@ export default function CotizacionesPage() {
     const [showModal, setShowModal] = useState(false);
     const [cotizacionAEliminar, setCotizacionAEliminar] = useState<Cotizacion | null>(null);
     const [cotizacionParaEvento, setCotizacionParaEvento] = useState<Cotizacion | null>(null);
+    const [cotizacionParaReunion, setCotizacionParaReunion] = useState<Cotizacion | null>(null);
     const [creandoEvento, setCreandoEvento] = useState(false);
+    const [creandoReunion, setCreandoReunion] = useState(false);
     const [eliminando, setEliminando] = useState(false);
     const [busqueda, setBusqueda] = useState('');
     const [soloSinEvento, setSoloSinEvento] = useState(false);
     const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
     const [estadoEvento, setEstadoEvento] = useState(0);
+    const [reunionFecha, setReunionFecha] = useState('');
+    const [reunionHora, setReunionHora] = useState('09');
+    const [reunionMinutos, setReunionMinutos] = useState('00');
     const [formData, setFormData] = useState({
         nombreCliente: '',
         fechaEvento: '',
@@ -68,7 +120,6 @@ export default function CotizacionesPage() {
                 cantidadInvitados: parseInt(formData.cantidadInvitados),
                 precioPorInvitado: parseFloat(formData.precioPorInvitado),
             };
-
             const result = await cotizacionService.crearCotizacion(nuevaCotizacion);
             if (result) {
                 setCotizaciones([result, ...cotizaciones]);
@@ -101,11 +152,17 @@ export default function CotizacionesPage() {
         setEstadoEvento(0);
     }
 
+    function abrirModalCrearReunion(cotizacion: Cotizacion) {
+        setCotizacionParaReunion(cotizacion);
+        setReunionFecha('');
+        setReunionHora('09');
+        setReunionMinutos('00');
+    }
+
     async function handleCrearEventoDesdeCotizacion() {
         if (!cotizacionParaEvento) return;
         try {
             setCreandoEvento(true);
-
             const nuevoEvento = {
                 id: 0,
                 cotizacionId: cotizacionParaEvento.id,
@@ -121,19 +178,13 @@ export default function CotizacionesPage() {
             } as Evento;
 
             const eventoCreado = await eventoService.crearEvento(nuevoEvento);
-
             if (eventoCreado) {
-                // Con el id real del evento recién guardado, actualizamos la cotización
                 await cotizacionService.actualizarEventoId(cotizacionParaEvento.id, eventoCreado.id);
-
-                // Actualizamos el estado local para reflejar el vínculo
                 setCotizaciones(cotizaciones.map(c =>
                     c.id === cotizacionParaEvento.id ? { ...c, eventoId: eventoCreado.id } : c
                 ));
                 setCotizacionParaEvento(null);
                 showToast('Evento creado y vinculado correctamente', 'success');
-
-                // Guardamos solo el eventoId y navegamos
                 localStorage.setItem('eventoSeleccionado', JSON.stringify({ eventoId: eventoCreado.id }));
                 router.push('/eventos');
             }
@@ -141,6 +192,28 @@ export default function CotizacionesPage() {
             showToast(error?.message ?? 'Error al crear el evento', 'error');
         } finally {
             setCreandoEvento(false);
+        }
+    }
+
+    async function handleCrearReunionDesdeCotizacion() {
+        if (!cotizacionParaReunion || !reunionFecha) return;
+        try {
+            setCreandoReunion(true);
+            const fechaHoraISO = `${reunionFecha}T${reunionHora}:${reunionMinutos}:00`;
+            await reunionService.crearReunion({
+                nombreCliente: cotizacionParaReunion.nombreCliente,
+                fechaHora: fechaHoraISO,
+                cotizacionId: cotizacionParaReunion.id,
+            });
+            setCotizacionParaReunion(null);
+            setReunionFecha('');
+            setReunionHora('09');
+            setReunionMinutos('00');
+            showToast('Reunión agendada correctamente', 'success');
+        } catch (error: any) {
+            showToast(error?.message ?? 'Error al agendar la reunión', 'error');
+        } finally {
+            setCreandoReunion(false);
         }
     }
 
@@ -169,11 +242,9 @@ export default function CotizacionesPage() {
                         <h1 className="text-3xl font-bold text-[#1C1C1C]">Cotizaciones</h1>
                         <p className="text-[#6B7280] mt-1 text-sm">Seguimiento y administración de propuestas</p>
                     </div>
-                    <button
-                        onClick={() => setShowModal(true)}
+                    <button onClick={() => setShowModal(true)}
                         className="group relative overflow-hidden btn-primary flex items-center gap-2 justify-center sm:justify-start px-5 py-2.5 rounded-xl font-semibold text-sm transition-all hover:shadow-lg hover:shadow-orange-200 active:scale-95"
-                        style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}
-                    >
+                        style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}>
                         <Plus size={16} className="transition-transform group-hover:rotate-90 duration-200" />
                         Nueva Cotización
                     </button>
@@ -183,13 +254,9 @@ export default function CotizacionesPage() {
                 <div className="flex flex-col sm:flex-row gap-3">
                     <div className="relative flex-1">
                         <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
-                        <input
-                            type="text"
-                            value={busqueda}
-                            onChange={(e) => setBusqueda(e.target.value)}
+                        <input type="text" value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
                             placeholder="Buscar por nombre de cliente..."
-                            className="w-full pl-9 pr-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all"
-                        />
+                            className="w-full pl-9 pr-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all" />
                         {busqueda && (
                             <button onClick={() => setBusqueda('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#C4C4C4] hover:text-[#6B7280] transition-colors">
                                 <X size={14} />
@@ -213,9 +280,7 @@ export default function CotizacionesPage() {
 
                 {(busqueda || soloSinEvento) && !loading && (
                     <p className="text-xs text-[#9CA3AF] -mt-3">
-                        {cotizacionesFiltradas.length === 0
-                            ? 'Sin resultados'
-                            : `${cotizacionesFiltradas.length} resultado${cotizacionesFiltradas.length !== 1 ? 's' : ''}`}
+                        {cotizacionesFiltradas.length === 0 ? 'Sin resultados' : `${cotizacionesFiltradas.length} resultado${cotizacionesFiltradas.length !== 1 ? 's' : ''}`}
                     </p>
                 )}
 
@@ -232,11 +297,9 @@ export default function CotizacionesPage() {
                         </div>
                         <p className="text-[#3C3C3C] font-semibold mb-1">Aún no hay cotizaciones</p>
                         <p className="text-[#9CA3AF] text-sm mb-6">Crea tu primera propuesta para un cliente</p>
-                        <button
-                            onClick={() => setShowModal(true)}
+                        <button onClick={() => setShowModal(true)}
                             className="btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
-                            style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}
-                        >
+                            style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}>
                             <Plus size={16} />
                             Crear primera cotización
                         </button>
@@ -254,11 +317,9 @@ export default function CotizacionesPage() {
                         {cotizacionesFiltradas.map((cotizacion, index) => {
                             const total = cotizacion.cantidadInvitados * cotizacion.precioPorInvitado;
                             return (
-                                <div
-                                    key={cotizacion.id}
+                                <div key={cotizacion.id}
                                     className="group bg-white border border-[#F0F0F0] rounded-2xl px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:border-[#FFD4C2] hover:shadow-md transition-all duration-200"
-                                    style={{ animationDelay: `${index * 40}ms` }}
-                                >
+                                    style={{ animationDelay: `${index * 40}ms` }}>
                                     <div className="flex items-center gap-4 flex-1 min-w-0">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -292,30 +353,32 @@ export default function CotizacionesPage() {
                                             </p>
                                         </div>
                                         <div className="hidden sm:block w-px h-8 bg-[#F0F0F0]" />
+
+                                        {/* Botón agendar reunión — siempre visible */}
+                                        <button onClick={() => abrirModalCrearReunion(cotizacion)}
+                                            className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-[#FFF4F0] transition-colors group/cal"
+                                            title="Agendar reunión">
+                                            <CalendarClock size={15} className="text-[#D1D5DB] group-hover/cal:text-[#FF6B35] transition-colors" />
+                                        </button>
+
                                         {!cotizacion.eventoId ? (
                                             <>
-                                                <button
-                                                    onClick={() => abrirModalCrearEvento(cotizacion)}
+                                                <button onClick={() => abrirModalCrearEvento(cotizacion)}
                                                     className="group/btn flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-md hover:shadow-orange-200 active:scale-95"
-                                                    style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}
-                                                >
+                                                    style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}>
                                                     <Sparkles size={13} />
                                                     Crear evento
                                                     <ChevronRight size={13} className="transition-transform group-hover/btn:translate-x-0.5" />
                                                 </button>
-                                                <button
-                                                    onClick={() => setCotizacionAEliminar(cotizacion)}
+                                                <button onClick={() => setCotizacionAEliminar(cotizacion)}
                                                     className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-red-50 transition-colors group/del"
-                                                    title="Eliminar"
-                                                >
+                                                    title="Eliminar">
                                                     <Trash2 size={15} className="text-[#D1D5DB] group-hover/del:text-red-500 transition-colors" />
                                                 </button>
                                             </>
                                         ) : (
-                                            <button
-                                                onClick={() => navegarAEvento(cotizacion.eventoId!)}
-                                                className="group/nav flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-xl border border-emerald-100 whitespace-nowrap hover:bg-emerald-100 hover:border-emerald-200 transition-all"
-                                            >
+                                            <button onClick={() => navegarAEvento(cotizacion.eventoId!)}
+                                                className="group/nav flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-xl border border-emerald-100 whitespace-nowrap hover:bg-emerald-100 hover:border-emerald-200 transition-all">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                                 Evento creado
                                                 <ArrowUpRight size={12} className="transition-transform group-hover/nav:translate-x-0.5 group-hover/nav:-translate-y-0.5" />
@@ -462,6 +525,73 @@ export default function CotizacionesPage() {
                                     className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-orange-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                                     style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}>
                                     {creandoEvento ? 'Creando...' : 'Confirmar y crear'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Modal Agendar Reunión desde Cotización */}
+                {cotizacionParaReunion && (
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" style={{ minHeight: '100dvh' }} onClick={() => !creandoReunion && setCotizacionParaReunion(null)}>
+                        <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full" onClick={(e) => e.stopPropagation()} style={{ animation: 'modalIn 0.2s ease-out' }}>
+                            <div className="px-7 pt-7 pb-5 border-b border-[#F5F5F5]">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h2 className="text-xl font-bold text-[#1C1C1C]">Agendar Reunión</h2>
+                                        <p className="text-[#9CA3AF] text-sm mt-0.5">Con <span className="font-medium text-[#3C3C3C]">{cotizacionParaReunion.nombreCliente}</span></p>
+                                    </div>
+                                    <button onClick={() => setCotizacionParaReunion(null)} disabled={creandoReunion}
+                                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F5F5F5] hover:bg-[#EBEBEB] transition-colors disabled:opacity-50">
+                                        <X size={16} className="text-[#6B7280]" />
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="px-7 py-6 space-y-5">
+                                {/* Datos precargados */}
+                                <div className="bg-[#FAFAFA] border border-[#F0F0F0] rounded-xl p-4 flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-[#FFF4F0] flex items-center justify-center shrink-0">
+                                        <User size={14} className="text-[#FF6B35]" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-[#1C1C1C]">{cotizacionParaReunion.nombreCliente}</p>
+                                        <p className="text-xs text-[#9CA3AF]">Cotización #{cotizacionParaReunion.id}</p>
+                                    </div>
+                                </div>
+
+                                {/* Fecha */}
+                                <div>
+                                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Fecha</label>
+                                    <DatePicker value={reunionFecha} onChange={setReunionFecha} />
+                                </div>
+
+                                {/* Hora */}
+                                <div>
+                                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Hora</label>
+                                    <div className="flex items-center gap-2">
+                                        <TimeSelect value={reunionHora} onChange={setReunionHora} options={HORAS_REUNION} suffix="hs" />
+                                        <span className="text-[#C4C4C4] font-bold text-lg">:</span>
+                                        <TimeSelect value={reunionMinutos} onChange={setReunionMinutos} options={MINUTOS_REUNION} suffix="min" />
+                                    </div>
+                                    {reunionFecha && (
+                                        <div className="mt-2.5 flex items-center gap-2 px-3 py-2 bg-[#FFF4F0] rounded-xl border border-[#FFD4C2]">
+                                            <Clock size={12} className="text-[#FF6B35] shrink-0" />
+                                            <span className="text-xs text-[#FF6B35] font-medium capitalize">
+                                                {new Date(`${reunionFecha}T${reunionHora}:${reunionMinutos}:00`).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })} — {reunionHora}:{reunionMinutos}hs
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="px-7 pb-7 flex gap-3">
+                                <button onClick={() => setCotizacionParaReunion(null)} disabled={creandoReunion}
+                                    className="flex-1 px-4 py-2.5 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors disabled:opacity-50">
+                                    Cancelar
+                                </button>
+                                <button onClick={handleCrearReunionDesdeCotizacion} disabled={!reunionFecha || creandoReunion}
+                                    className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-orange-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+                                    style={{ background: reunionFecha ? 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' : '#E5E7EB' }}>
+                                    {creandoReunion ? 'Agendando...' : 'Agendar'}
                                 </button>
                             </div>
                         </div>

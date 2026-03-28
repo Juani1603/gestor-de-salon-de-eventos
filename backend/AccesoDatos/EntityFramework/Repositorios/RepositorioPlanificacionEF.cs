@@ -1,12 +1,7 @@
 ﻿using LogicaDeNegocio.Entidades;
 using LogicaDeNegocio.Exceptions;
 using LogicaDeNegocio.InterfacesRepositorio;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace AccesoDatos.EntityFramework.Repositorios
 {
@@ -22,6 +17,12 @@ namespace AccesoDatos.EntityFramework.Repositorios
             obj.Validar();
             _context.Planificaciones.Add(obj);
             _context.SaveChanges();
+
+            // Vinculamos el PlanificacionId al Evento
+            Evento evento = _context.Eventos.Find(obj.EventoId);
+            if (evento == null) throw new PlanificacionException("Evento no encontrado.");
+            evento.PlanificacionId = obj.Id;
+            _context.SaveChanges();
         }
 
         public IEnumerable<Planificacion> FindAll()
@@ -32,7 +33,9 @@ namespace AccesoDatos.EntityFramework.Repositorios
         public Planificacion FindById(int id)
         {
             Planificacion planificacion = _context.Planificaciones
-                                          .Where(p => p.Id == id).FirstOrDefault();
+            .Include(p => p.ServicioEvento)
+            .Include(p => p.TimingsEvento)
+            .FirstOrDefault(p => p.Id == id);
 
             if (planificacion == null)
             {
@@ -51,7 +54,40 @@ namespace AccesoDatos.EntityFramework.Repositorios
 
         public void Update(Planificacion obj)
         {
-            _context.Planificaciones.Update(obj);
+            var planificacion = _context.Planificaciones
+                .Include(p => p.ServicioEvento)
+                .Include(p => p.TimingsEvento)
+                .FirstOrDefault(p => p.Id == obj.Id);
+
+            if (planificacion == null) throw new PlanificacionException("Planificación no encontrada.");
+
+            // Campos base — el mapper ya convirtió los TimeSpan
+            planificacion.HoraLlegada = obj.HoraLlegada;
+            planificacion.HoraSalida = obj.HoraSalida;
+            planificacion.HoraComida = obj.HoraComida;
+            planificacion.CantidadMesas = obj.CantidadMesas;
+            planificacion.Observaciones = obj.Observaciones;
+
+            // Reemplazamos servicios y timings
+            _context.ServiciosEventos.RemoveRange(planificacion.ServicioEvento!);
+            _context.TimingEventos.RemoveRange(planificacion.TimingsEvento!);
+
+            planificacion.ServicioEvento = obj.ServicioEvento?.Select(s => new ServicioEvento
+            {
+                PlanificacionId = planificacion.Id,
+                TipoServicio = s.TipoServicio,
+                Cantidad = s.Cantidad,
+                Descripcion = s.Descripcion,
+            }).ToList() ?? new();
+
+            planificacion.TimingsEvento = obj.TimingsEvento?.Select(t => new TimingEvento
+            {
+                PlanificacionId = planificacion.Id,
+                Momento = t.Momento,
+                Hora = t.Hora,
+                Orden = t.Orden,
+            }).ToList() ?? new();
+
             _context.SaveChanges();
         }
     }

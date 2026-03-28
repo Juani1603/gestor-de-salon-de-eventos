@@ -61,3 +61,29 @@ export const EstadoEventoLabels = {
   [EstadoEvento.Pagado]: 'Pagado',
   [EstadoEvento.Realizado]: 'Realizado',
 };
+
+export interface TimingEvento {
+  id: number;
+  momento: string;
+  hora: string; 
+  orden: number;
+}
+
+export interface ServicioEvento {
+  id: number;
+  tipoServicio: number;
+  cantidad?: number | null;
+  descripcion?: string | null;
+}
+
+export interface Planificacion {
+  id: number;
+  eventoId: number;
+  horaLlegada: string;   
+  horaSalida?: string | null;
+  horaComida: string;
+  cantidadMesas: number;
+  observaciones?: string | null;
+  servicios: ServicioEvento[];
+  timings: TimingEvento[];
+}

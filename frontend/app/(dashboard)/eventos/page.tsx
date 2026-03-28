@@ -1,11 +1,17 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { ChevronLeft, ChevronDown, ChevronRight, Plus, Calendar, X, Users, DollarSign, Star, Heart, Cake, Briefcase, CheckCircle, AlertCircle, Trash2, AlertTriangle } from 'lucide-react';
+import {
+  ChevronLeft, ChevronDown, ChevronRight, Plus, Calendar, X,
+  Users, DollarSign, Star, Heart, Cake, Briefcase,
+  CheckCircle, AlertCircle, Trash2, AlertTriangle, ClipboardList, Eye
+} from 'lucide-react';
 import { eventoService } from '@/app/services/eventoService';
-import { Evento, TipoEventoLabels, EstadoEventoLabels } from '@/app/types';
+import { planificacionService } from '@/app/services/planificacionService';
+import { Evento, Planificacion, TipoEventoLabels, EstadoEventoLabels } from '@/app/types';
 import DatePicker from '@/app/components/DatePicker';
 import PageTransition from '@/app/components/PageTransition';
+import ModalPlanificacion from '@/app/components/ModalPlanificacion';
 
 const DAYS_SHORT = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const DAYS_MOBILE = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
@@ -31,10 +37,7 @@ const FORM_INITIAL = {
 };
 
 function SelectCustom({
-  value,
-  onChange,
-  options,
-  className = '',
+  value, onChange, options, className = '',
 }: {
   value: number;
   onChange: (val: number) => void;
@@ -43,7 +46,6 @@ function SelectCustom({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -51,9 +53,7 @@ function SelectCustom({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
   const selected = options.find(o => o.value === value);
-
   return (
     <div ref={ref} className={`relative ${className}`}>
       <button type="button" onClick={() => setOpen(!open)}
@@ -107,14 +107,17 @@ export default function EventosPage() {
   const [eliminando, setEliminando] = useState(false);
   const [eventoAEliminar, setEventoAEliminar] = useState<Evento | null>(null);
 
+  // Planificación
+  const [showModalPlanificacion, setShowModalPlanificacion] = useState(false);
+  const [planificacionActual, setPlanificacionActual] = useState<Planificacion | null>(null);
+  const [loadingPlanificacion, setLoadingPlanificacion] = useState(false);
+
   const showToast = (msg: string, type: 'success' | 'error') => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
   };
 
-  useEffect(() => {
-    cargarEventosDelMes();
-  }, [currentMonth, currentYear]);
+  useEffect(() => { cargarEventosDelMes(); }, [currentMonth, currentYear]);
 
   useEffect(() => {
     if (!pendingEventoId) return;
@@ -146,11 +149,41 @@ export default function EventosPage() {
     }
   }
 
+  async function handleAbrirPlanificacion() {
+    if (!selectedEvento) return;
+    if (selectedEvento.planificacionId) {
+      setLoadingPlanificacion(true);
+      try {
+        const p = await planificacionService.obtenerPlanificacion(selectedEvento.planificacionId);
+        setPlanificacionActual(p);
+      } catch (error) {
+        showToast('Error al cargar la planificación', 'error');
+        return;
+      } finally {
+        setLoadingPlanificacion(false);
+      }
+    } else {
+      setPlanificacionActual(null);
+    }
+    setShowModalPlanificacion(true);
+  }
+
+  function handlePlanificacionGuardada(planificacion: Planificacion) {
+    setShowModalPlanificacion(false);
+    setPlanificacionActual(null);
+    // Actualizamos el evento seleccionado con el planificacionId
+    if (selectedEvento && !selectedEvento.planificacionId) {
+      const eventoActualizado = { ...selectedEvento, planificacionId: planificacion.id };
+      setSelectedEvento(eventoActualizado);
+      setEventos(prev => prev.map(e => e.id === eventoActualizado.id ? eventoActualizado : e));
+    }
+    showToast(planificacionActual ? 'Planificación actualizada correctamente' : 'Planificación creada correctamente', 'success');
+  }
+
   async function handleCrearEvento() {
     try {
       const nuevoEvento = {
-        id: 0,
-        cotizacionId: null,
+        id: 0, cotizacionId: null,
         nombreCliente: formData.nombreCliente,
         fechaEvento: formData.fechaEvento,
         tipoEvento: formData.tipoEvento,
@@ -158,10 +191,8 @@ export default function EventosPage() {
         precioPorInvitado: parseFloat(formData.precioPorInvitado),
         estadoEvento: formData.estadoEvento,
         fechaCreacion: new Date().toISOString(),
-        planificacionId: null,
-        linkCompartible: null,
+        planificacionId: null, linkCompartible: null,
       } as Evento;
-
       await eventoService.crearEvento(nuevoEvento);
       setShowModal(false);
       setFormData(FORM_INITIAL);
@@ -197,7 +228,6 @@ export default function EventosPage() {
         precioPorInvitado: parseFloat(editFormData.precioPorInvitado),
         estadoEvento: editFormData.estadoEvento,
       };
-
       const resultado = await eventoService.editarEvento(eventoEditado);
       if (resultado) {
         setSelectedEvento(resultado);
@@ -241,20 +271,14 @@ export default function EventosPage() {
     if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(currentYear - 1); }
     else setCurrentMonth(currentMonth - 1);
   };
-
   const nextMonth = () => {
     if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(currentYear + 1); }
     else setCurrentMonth(currentMonth + 1);
   };
-
-  const goToToday = () => {
-    setCurrentMonth(new Date().getMonth());
-    setCurrentYear(new Date().getFullYear());
-  };
+  const goToToday = () => { setCurrentMonth(new Date().getMonth()); setCurrentYear(new Date().getFullYear()); };
 
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
-
   const calendarDays: { day: number | null; eventos: Evento[] }[] = [];
   for (let i = 0; i < firstDayOfMonth; i++) calendarDays.push({ day: null, eventos: [] });
   for (let day = 1; day <= daysInMonth; day++) {
@@ -275,8 +299,66 @@ export default function EventosPage() {
     <button onClick={() => setEventoAEliminar(evento)} disabled={eliminando}
       className="flex items-center px-3 py-2 rounded-xl border border-red-200 bg-red-50 text-red-500 text-xs font-semibold hover:bg-red-100 hover:border-red-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
       <Trash2 size={13} />
-      <span className="hidden sm:inline"></span>
     </button>
+  );
+
+  // Botones de planificación para el side panel
+  const BotonesPlanificacion = () => {
+    if (!selectedEvento) return null;
+    const tienePlanificacion = !!selectedEvento.planificacionId;
+    return (
+      <div className="flex gap-2">
+        <button onClick={handleAbrirPlanificacion} disabled={loadingPlanificacion}
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-orange-200 active:scale-95 disabled:opacity-50"
+          style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}>
+          {loadingPlanificacion ? (
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : tienePlanificacion ? (
+            <><Eye size={14} /> Ver Planificación</>
+          ) : (
+            <><ClipboardList size={14} /> Planificar Evento</>
+          )}
+        </button>
+      </div>
+    );
+  };
+
+  const SidePanelContent = ({ evento }: { evento: Evento }) => (
+    <div className="flex flex-col p-5 gap-5">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1">Fecha</p>
+        <p className="text-sm text-[#3C3C3C]">
+          {new Date(evento.fechaEvento.split('T')[0] + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        </p>
+      </div>
+      <div className="flex gap-3">
+        <div className="flex-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Tipo</p>
+          <span className="inline-block px-3 py-1 bg-[#FEF3F0] text-[#FF6B35] rounded-lg text-xs font-semibold">{TipoEventoLabels[evento.tipoEvento]}</span>
+        </div>
+        <div className="flex-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Estado</p>
+          <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-semibold border border-emerald-100">{EstadoEventoLabels[evento.estadoEvento]}</span>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-[#FAFAFA] border border-[#F0F0F0] rounded-xl p-3">
+          <div className="flex items-center gap-1.5 text-[#9CA3AF] mb-1"><Users size={12} /><span className="text-xs">Invitados</span></div>
+          <p className="text-2xl font-bold text-[#1C1C1C]">{evento.cantidadInvitados}</p>
+        </div>
+        <div className="bg-[#FAFAFA] border border-[#F0F0F0] rounded-xl p-3">
+          <div className="flex items-center gap-1.5 text-[#9CA3AF] mb-1"><DollarSign size={12} /><span className="text-xs">Por persona</span></div>
+          <p className="text-2xl font-bold text-[#1C1C1C]">${evento.precioPorInvitado.toFixed(0)}</p>
+        </div>
+      </div>
+      <div className="space-y-2 pt-1">
+        <BotonesPlanificacion />
+        <button onClick={() => abrirModalEdicion(evento)}
+          className="w-full px-4 py-2.5 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors">
+          Editar Evento
+        </button>
+      </div>
+    </div>
   );
 
   return (
@@ -298,11 +380,9 @@ export default function EventosPage() {
           </button>
         </div>
 
-        {/* Calendar card y Side panel */}
+        {/* Calendar + Side panel */}
         <div className="flex gap-6 items-stretch">
           <div className="bg-white border border-[#F0F0F0] rounded-2xl p-4 sm:p-6 flex-1 min-w-0">
-
-            {/* Controls */}
             <div className="flex flex-col gap-4 mb-6">
               <div className="flex items-center justify-between min-w-0">
                 <div className="flex items-center gap-1 min-w-0">
@@ -317,8 +397,7 @@ export default function EventosPage() {
                   </button>
                 </div>
                 <button onClick={goToToday} className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors shrink-0">
-                  <Calendar size={14} />
-                  Hoy
+                  <Calendar size={14} /> Hoy
                 </button>
               </div>
               <div className="flex items-center gap-2">
@@ -327,18 +406,11 @@ export default function EventosPage() {
               </div>
             </div>
 
-            {/* Day headers — desktop */}
             <div className="hidden sm:grid grid-cols-7 gap-2 mb-2">
-              {DAYS_SHORT.map((day, i) => (
-                <div key={i} className="text-center text-xs font-semibold uppercase tracking-wider text-[#9CA3AF] py-2">{day}</div>
-              ))}
+              {DAYS_SHORT.map((day, i) => <div key={i} className="text-center text-xs font-semibold uppercase tracking-wider text-[#9CA3AF] py-2">{day}</div>)}
             </div>
-
-            {/* Day headers — mobile */}
             <div className="grid sm:hidden grid-cols-7 gap-1 mb-2">
-              {DAYS_MOBILE.map((day, i) => (
-                <div key={i} className="text-center text-xs font-semibold text-[#9CA3AF] py-1">{day}</div>
-              ))}
+              {DAYS_MOBILE.map((day, i) => <div key={i} className="text-center text-xs font-semibold text-[#9CA3AF] py-1">{day}</div>)}
             </div>
 
             {loading ? (
@@ -348,7 +420,6 @@ export default function EventosPage() {
               </div>
             ) : (
               <>
-                {/* Desktop grid */}
                 <div className="hidden sm:grid grid-cols-7 gap-2">
                   {calendarDays.map((item, index) => {
                     const { day, eventos: eventosDelDia } = item;
@@ -362,9 +433,7 @@ export default function EventosPage() {
                         className={`min-h-[110px] p-2.5 rounded-xl border transition-all ${day ? 'bg-white' : 'bg-[#FAFAFA]'} ${today ? 'border-[#FF6B35] border-2' : 'border-[#F0F0F0]'} ${isEmpty ? 'cursor-pointer hover:border-[#FFD4C2] hover:bg-[#FFFAF8]' : ''}`}>
                         {day && (
                           <>
-                            <div className={`text-xs font-semibold mb-2 w-6 h-6 flex items-center justify-center rounded-full ${today ? 'bg-[#FF6B35] text-white' : 'text-[#6B7280]'}`}>
-                              {day}
-                            </div>
+                            <div className={`text-xs font-semibold mb-2 w-6 h-6 flex items-center justify-center rounded-full ${today ? 'bg-[#FF6B35] text-white' : 'text-[#6B7280]'}`}>{day}</div>
                             <div className="space-y-1">
                               {eventosDelDia.length > 0
                                 ? eventosDelDia.map(evento => (
@@ -376,7 +445,7 @@ export default function EventosPage() {
                                   </div>
                                 ))
                                 : hoveredDay === day && (
-                                  <div className="flex items-center justify-center h-12 text-[#FFB59A] transition-all">
+                                  <div className="flex items-center justify-center h-12 text-[#FFB59A]">
                                     <Plus size={18} strokeWidth={1.5} />
                                   </div>
                                 )
@@ -389,7 +458,6 @@ export default function EventosPage() {
                   })}
                 </div>
 
-                {/* Mobile grid */}
                 <div className="sm:hidden grid grid-cols-7 gap-1">
                   {calendarDays.map((item, index) => {
                     const { day, eventos: eventosDelDia } = item;
@@ -397,12 +465,8 @@ export default function EventosPage() {
                     const today = isToday(day);
                     return (
                       <div key={index}
-                        onClick={() => {
-                          if (!day) return;
-                          if (hasEvents) setSelectedEvento(eventosDelDia[0]);
-                          else openModalWithDate(day);
-                        }}
-                        className={`aspect-square p-1 rounded-lg border flex flex-col items-center justify-center transition-all ${day ? 'bg-white' : 'bg-[#FAFAFA]'} ${day ? 'cursor-pointer' : ''} ${today ? 'border-[#FF6B35] border-2' : 'border-[#F0F0F0]'}`}>
+                        onClick={() => { if (!day) return; if (hasEvents) setSelectedEvento(eventosDelDia[0]); else openModalWithDate(day); }}
+                        className={`aspect-square p-1 rounded-lg border flex flex-col items-center justify-center transition-all ${day ? 'bg-white cursor-pointer' : 'bg-[#FAFAFA]'} ${today ? 'border-[#FF6B35] border-2' : 'border-[#F0F0F0]'}`}>
                         {day && (
                           <>
                             <div className={`text-xs ${today ? 'text-[#FF6B35] font-bold' : 'text-[#6B7280]'}`}>{day}</div>
@@ -420,7 +484,7 @@ export default function EventosPage() {
             )}
           </div>
 
-          {/* Side panel — desktop only */}
+          {/* Side panel desktop */}
           <div className={`hidden lg:block transition-all duration-300 ease-in-out self-stretch ${selectedEvento ? 'w-80 opacity-100' : 'w-0 opacity-0 pointer-events-none'}`}>
             <div className="w-80 h-full bg-white rounded-2xl border border-[#F0F0F0] overflow-y-auto">
               <div className="px-5 py-4 flex items-center justify-between border-b border-[#F0F0F0] sticky top-0 bg-white rounded-t-2xl z-10">
@@ -435,51 +499,12 @@ export default function EventosPage() {
                   </button>
                 </div>
               </div>
-              {selectedEvento && (
-                <div className="flex flex-col p-5 gap-5">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1">Fecha</p>
-                    <p className="text-sm text-[#3C3C3C]">
-                      {new Date(selectedEvento.fechaEvento.split('T')[0] + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                    </p>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="flex-1">
-                      <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Tipo</p>
-                      <span className="inline-block px-3 py-1 bg-[#FEF3F0] text-[#FF6B35] rounded-lg text-xs font-semibold">{TipoEventoLabels[selectedEvento.tipoEvento]}</span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Estado</p>
-                      <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-semibold border border-emerald-100">{EstadoEventoLabels[selectedEvento.estadoEvento]}</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-[#FAFAFA] border border-[#F0F0F0] rounded-xl p-3">
-                      <div className="flex items-center gap-1.5 text-[#9CA3AF] mb-1"><Users size={12} /><span className="text-xs">Invitados</span></div>
-                      <p className="text-2xl font-bold text-[#1C1C1C]">{selectedEvento.cantidadInvitados}</p>
-                    </div>
-                    <div className="bg-[#FAFAFA] border border-[#F0F0F0] rounded-xl p-3">
-                      <div className="flex items-center gap-1.5 text-[#9CA3AF] mb-1"><DollarSign size={12} /><span className="text-xs">Por persona</span></div>
-                      <p className="text-2xl font-bold text-[#1C1C1C]">${selectedEvento.precioPorInvitado.toFixed(0)}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2 pt-1">
-                    <button className="w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-orange-200 active:scale-95" style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}>
-                      Ver Planificación
-                    </button>
-                    <button
-                      onClick={() => abrirModalEdicion(selectedEvento)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors">
-                      Editar Evento
-                    </button>
-                  </div>
-                </div>
-              )}
+              {selectedEvento && <SidePanelContent evento={selectedEvento} />}
             </div>
           </div>
         </div>
 
-        {/* Mobile detail sheet */}
+        {/* Mobile sheet */}
         {selectedEvento && (
           <>
             <div className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onClick={() => setSelectedEvento(null)} />
@@ -497,44 +522,7 @@ export default function EventosPage() {
                   </button>
                 </div>
               </div>
-              <div className="flex flex-col p-5 gap-5">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1">Fecha</p>
-                  <p className="text-sm text-[#3C3C3C]">
-                    {new Date(selectedEvento.fechaEvento.split('T')[0] + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Tipo</p>
-                    <span className="inline-block px-3 py-1 bg-[#FEF3F0] text-[#FF6B35] rounded-lg text-xs font-semibold">{TipoEventoLabels[selectedEvento.tipoEvento]}</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF] mb-1.5">Estado</p>
-                    <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-semibold border border-emerald-100">{EstadoEventoLabels[selectedEvento.estadoEvento]}</span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#FAFAFA] border border-[#F0F0F0] rounded-xl p-3">
-                    <div className="flex items-center gap-1.5 text-[#9CA3AF] mb-1"><Users size={12} /><span className="text-xs">Invitados</span></div>
-                    <p className="text-2xl font-bold text-[#1C1C1C]">{selectedEvento.cantidadInvitados}</p>
-                  </div>
-                  <div className="bg-[#FAFAFA] border border-[#F0F0F0] rounded-xl p-3">
-                    <div className="flex items-center gap-1.5 text-[#9CA3AF] mb-1"><DollarSign size={12} /><span className="text-xs">Por persona</span></div>
-                    <p className="text-2xl font-bold text-[#1C1C1C]">${selectedEvento.precioPorInvitado.toFixed(0)}</p>
-                  </div>
-                </div>
-                <div className="space-y-2 pt-1 pb-2">
-                  <button className="w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-orange-200 active:scale-95" style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}>
-                    Ver Planificación
-                  </button>
-                  <button
-                    onClick={() => abrirModalEdicion(selectedEvento)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors">
-                    Editar Evento
-                  </button>
-                </div>
-              </div>
+              <SidePanelContent evento={selectedEvento} />
             </div>
           </>
         )}
@@ -545,21 +533,15 @@ export default function EventosPage() {
             <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} style={{ animation: 'modalIn 0.2s ease-out' }}>
               <div className="px-7 pt-7 pb-5 border-b border-[#F5F5F5]">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-bold text-[#1C1C1C]">Nuevo Evento</h2>
-                    <p className="text-[#9CA3AF] text-sm mt-0.5">Completa los detalles del evento</p>
-                  </div>
-                  <button onClick={() => setShowModal(false)} className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F5F5F5] hover:bg-[#EBEBEB] transition-colors">
-                    <X size={16} className="text-[#6B7280]" />
-                  </button>
+                  <div><h2 className="text-xl font-bold text-[#1C1C1C]">Nuevo Evento</h2><p className="text-[#9CA3AF] text-sm mt-0.5">Completa los detalles del evento</p></div>
+                  <button onClick={() => setShowModal(false)} className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F5F5F5] hover:bg-[#EBEBEB] transition-colors"><X size={16} className="text-[#6B7280]" /></button>
                 </div>
               </div>
               <div className="px-7 py-6 space-y-5">
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Nombre del Cliente</label>
                   <input type="text" value={formData.nombreCliente} onChange={(e) => setFormData({ ...formData, nombreCliente: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all"
-                    placeholder="Ej: Juan Pérez" />
+                    className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all" placeholder="Ej: Juan Pérez" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Fecha del Evento</label>
@@ -580,21 +562,18 @@ export default function EventosPage() {
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Estado</label>
                   <SelectCustom value={formData.estadoEvento} onChange={(val) => setFormData({ ...formData, estadoEvento: val })}
-                    options={Object.entries(EstadoEventoLabels).map(([value, label]) => ({ value: parseInt(value), label: label as string }))}
-                    className="w-full" />
+                    options={Object.entries(EstadoEventoLabels).map(([value, label]) => ({ value: parseInt(value), label: label as string }))} className="w-full" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Invitados</label>
                     <input type="number" value={formData.cantidadInvitados} onChange={(e) => setFormData({ ...formData, cantidadInvitados: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all"
-                      placeholder="100" />
+                      className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all" placeholder="100" />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Precio / persona</label>
                     <input type="number" step="0.01" value={formData.precioPorInvitado} onChange={(e) => setFormData({ ...formData, precioPorInvitado: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all"
-                      placeholder="75.00" />
+                      className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all" placeholder="75.00" />
                   </div>
                 </div>
                 {formData.cantidadInvitados && formData.precioPorInvitado && (
@@ -624,23 +603,15 @@ export default function EventosPage() {
             <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} style={{ animation: 'modalIn 0.2s ease-out' }}>
               <div className="px-7 pt-7 pb-5 border-b border-[#F5F5F5]">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-bold text-[#1C1C1C]">Editar Evento</h2>
-                    <p className="text-[#9CA3AF] text-sm mt-0.5">Modificá los detalles del evento</p>
-                  </div>
-                  <button onClick={() => setEventoAEditar(null)} disabled={editando}
-                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F5F5F5] hover:bg-[#EBEBEB] transition-colors disabled:opacity-50">
-                    <X size={16} className="text-[#6B7280]" />
-                  </button>
+                  <div><h2 className="text-xl font-bold text-[#1C1C1C]">Editar Evento</h2><p className="text-[#9CA3AF] text-sm mt-0.5">Modificá los detalles del evento</p></div>
+                  <button onClick={() => setEventoAEditar(null)} disabled={editando} className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F5F5F5] hover:bg-[#EBEBEB] transition-colors disabled:opacity-50"><X size={16} className="text-[#6B7280]" /></button>
                 </div>
               </div>
               <div className="px-7 py-6 space-y-5">
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Nombre del Cliente</label>
-                  <input type="text" value={editFormData.nombreCliente}
-                    onChange={(e) => setEditFormData({ ...editFormData, nombreCliente: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all"
-                    placeholder="Ej: Juan Pérez" />
+                  <input type="text" value={editFormData.nombreCliente} onChange={(e) => setEditFormData({ ...editFormData, nombreCliente: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all" placeholder="Ej: Juan Pérez" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Fecha del Evento</label>
@@ -650,12 +621,9 @@ export default function EventosPage() {
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Tipo de Evento</label>
                   <div className="grid grid-cols-2 gap-2">
                     {TIPO_EVENTO_OPTIONS.map((opt) => (
-                      <button key={opt.value} type="button"
-                        onClick={() => setEditFormData({ ...editFormData, tipoEvento: opt.value })}
+                      <button key={opt.value} type="button" onClick={() => setEditFormData({ ...editFormData, tipoEvento: opt.value })}
                         className="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-medium transition-all"
-                        style={editFormData.tipoEvento === opt.value
-                          ? { borderColor: '#FF6B35', background: '#FFF4F0', color: '#FF6B35' }
-                          : { borderColor: '#EBEBEB', background: 'white', color: '#6B7280' }}>
+                        style={editFormData.tipoEvento === opt.value ? { borderColor: '#FF6B35', background: '#FFF4F0', color: '#FF6B35' } : { borderColor: '#EBEBEB', background: 'white', color: '#6B7280' }}>
                         {opt.icon}{opt.label}
                       </button>
                     ))}
@@ -663,25 +631,19 @@ export default function EventosPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Estado</label>
-                  <SelectCustom value={editFormData.estadoEvento}
-                    onChange={(val) => setEditFormData({ ...editFormData, estadoEvento: val })}
-                    options={Object.entries(EstadoEventoLabels).map(([value, label]) => ({ value: parseInt(value), label: label as string }))}
-                    className="w-full" />
+                  <SelectCustom value={editFormData.estadoEvento} onChange={(val) => setEditFormData({ ...editFormData, estadoEvento: val })}
+                    options={Object.entries(EstadoEventoLabels).map(([value, label]) => ({ value: parseInt(value), label: label as string }))} className="w-full" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Invitados</label>
-                    <input type="number" value={editFormData.cantidadInvitados}
-                      onChange={(e) => setEditFormData({ ...editFormData, cantidadInvitados: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all"
-                      placeholder="100" />
+                    <input type="number" value={editFormData.cantidadInvitados} onChange={(e) => setEditFormData({ ...editFormData, cantidadInvitados: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all" placeholder="100" />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-2">Precio / persona</label>
-                    <input type="number" step="0.01" value={editFormData.precioPorInvitado}
-                      onChange={(e) => setEditFormData({ ...editFormData, precioPorInvitado: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all"
-                      placeholder="75.00" />
+                    <input type="number" step="0.01" value={editFormData.precioPorInvitado} onChange={(e) => setEditFormData({ ...editFormData, precioPorInvitado: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-[#EBEBEB] rounded-xl text-sm text-[#1C1C1C] placeholder:text-[#C4C4C4] focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/30 focus:border-[#FF6B35] transition-all" placeholder="75.00" />
                   </div>
                 </div>
                 {editFormData.cantidadInvitados && editFormData.precioPorInvitado && (
@@ -694,10 +656,7 @@ export default function EventosPage() {
                 )}
               </div>
               <div className="px-7 pb-7 flex gap-3">
-                <button onClick={() => setEventoAEditar(null)} disabled={editando}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors disabled:opacity-50">
-                  Cancelar
-                </button>
+                <button onClick={() => setEventoAEditar(null)} disabled={editando} className="flex-1 px-4 py-2.5 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors disabled:opacity-50">Cancelar</button>
                 <button onClick={handleEditarEvento} disabled={!isEditFormValid || editando}
                   className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-orange-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
                   style={{ background: isEditFormValid ? 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' : '#E5E7EB' }}>
@@ -714,31 +673,31 @@ export default function EventosPage() {
             <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full" onClick={(e) => e.stopPropagation()} style={{ animation: 'modalIn 0.2s ease-out' }}>
               <div className="px-7 pt-7 pb-5">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center shrink-0">
-                    <AlertTriangle size={18} className="text-red-500" />
-                  </div>
+                  <div className="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center shrink-0"><AlertTriangle size={18} className="text-red-500" /></div>
                   <div>
                     <h2 className="text-base font-bold text-[#1C1C1C] mb-1">Eliminar evento</h2>
-                    <p className="text-sm text-[#6B7280]">
-                      ¿Estás seguro que querés eliminar el evento de{' '}
-                      <span className="font-semibold text-[#1C1C1C]">{eventoAEliminar.nombreCliente}</span>?
-                      Esta acción no se puede deshacer.
-                    </p>
+                    <p className="text-sm text-[#6B7280]">¿Estás seguro que querés eliminar el evento de <span className="font-semibold text-[#1C1C1C]">{eventoAEliminar.nombreCliente}</span>? Esta acción no se puede deshacer.</p>
                   </div>
                 </div>
               </div>
               <div className="px-7 pb-7 flex gap-3">
-                <button onClick={() => setEventoAEliminar(null)} disabled={eliminando}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors disabled:opacity-50">
-                  Cancelar
-                </button>
-                <button onClick={handleEliminarEvento} disabled={eliminando}
-                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                <button onClick={() => setEventoAEliminar(null)} disabled={eliminando} className="flex-1 px-4 py-2.5 rounded-xl border border-[#EBEBEB] text-sm font-semibold text-[#6B7280] hover:bg-[#F9F9F9] transition-colors disabled:opacity-50">Cancelar</button>
+                <button onClick={handleEliminarEvento} disabled={eliminando} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                   {eliminando ? 'Eliminando...' : 'Eliminar'}
                 </button>
               </div>
             </div>
           </div>
+        )}
+
+        {/* Modal Planificación */}
+        {showModalPlanificacion && selectedEvento && (
+          <ModalPlanificacion
+            evento={selectedEvento}
+            planificacionExistente={planificacionActual}
+            onClose={() => { setShowModalPlanificacion(false); setPlanificacionActual(null); }}
+            onGuardado={handlePlanificacionGuardada}
+          />
         )}
 
         {/* Toast */}
@@ -747,18 +706,16 @@ export default function EventosPage() {
             style={{ animation: 'modalIn 0.2s ease-out' }}>
             {toast.type === 'success' ? <CheckCircle size={18} className="text-green-500 shrink-0" /> : <AlertCircle size={18} className="text-red-500 shrink-0" />}
             {toast.msg}
-            <button onClick={() => setToast(null)} className="ml-1">
-              <X size={15} className={toast.type === 'success' ? 'text-green-400' : 'text-red-400'} />
-            </button>
+            <button onClick={() => setToast(null)} className="ml-1"><X size={15} className={toast.type === 'success' ? 'text-green-400' : 'text-red-400'} /></button>
           </div>
         )}
 
         <style>{`
-        @keyframes modalIn {
-          from { opacity: 0; transform: scale(0.96) translateY(8px); }
-          to   { opacity: 1; transform: scale(1) translateY(0); }
-        }
-      `}</style>
+          @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.96) translateY(8px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+          }
+        `}</style>
       </div>
     </PageTransition>
   );

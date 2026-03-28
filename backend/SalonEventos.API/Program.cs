@@ -1,14 +1,16 @@
 using AccesoDatos.EntityFramework;
-using LogicaDeNegocio.InterfacesRepositorio;
-using Microsoft.EntityFrameworkCore;
 using AccesoDatos.EntityFramework;
 using AccesoDatos.EntityFramework.Repositorios;
-using LogicaDeAplicacion.InterfacesCasosDeUso.ICotizacion;
 using LogicaDeAplicacion.CasosDeUso.CotizacionCU;
-using LogicaDeAplicacion.InterfacesCasosDeUso.IEvento;
 using LogicaDeAplicacion.CasosDeUso.EventoCU;
-using LogicaDeAplicacion.InterfacesCasosDeUso.IReunion;
+using LogicaDeAplicacion.CasosDeUso.PlanificacionCU;
 using LogicaDeAplicacion.CasosDeUso.ReunionCU;
+using LogicaDeAplicacion.InterfacesCasosDeUso.ICotizacion;
+using LogicaDeAplicacion.InterfacesCasosDeUso.IEvento;
+using LogicaDeAplicacion.InterfacesCasosDeUso.IPlanificacion;
+using LogicaDeAplicacion.InterfacesCasosDeUso.IReunion;
+using LogicaDeNegocio.InterfacesRepositorio;
+using Microsoft.EntityFrameworkCore;
 
 namespace SalonEventos.API
 {
@@ -53,6 +55,11 @@ namespace SalonEventos.API
             builder.Services.AddScoped<IBajaReunion, BajaReunionCU>();
             builder.Services.AddScoped<IObtenerReunionesDelMes, ObtenerReunionesDelMesCU>();
             builder.Services.AddScoped<IObtenerReunionProxima, ObtenerReunionProximaCU>();
+
+            //Planificación
+            builder.Services.AddScoped<IAltaPlanificacion, AltaPlanificacionCU>();
+            builder.Services.AddScoped<IEditarPlanificacion, EditarPlanificacionCU>();
+            builder.Services.AddScoped<IObtenerPlanificacionPorId, ObtenerPlanificacionPorIdCU>();
 
             // Servicios
             builder.Services.AddControllers();
