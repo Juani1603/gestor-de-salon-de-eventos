@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import {
   ChevronLeft, ChevronDown, ChevronRight, Plus, Calendar, X,
   Users, DollarSign, Star, Heart, Cake, Briefcase,
-  CheckCircle, AlertCircle, Trash2, AlertTriangle, ClipboardList, Download
+  CheckCircle, AlertCircle, Trash2, AlertTriangle, ClipboardList, Download, Pencil
 } from 'lucide-react';
 import { eventoService } from '@/app/services/eventoService';
 import { planificacionService } from '@/app/services/planificacionService';
@@ -12,6 +12,7 @@ import { Evento, Planificacion, TipoEventoLabels, EstadoEventoLabels } from '@/a
 import DatePicker from '@/app/components/DatePicker';
 import PageTransition from '@/app/components/PageTransition';
 import ModalPlanificacion from '@/app/components/ModalPlanificacion';
+import ModalDescargaPDF from '@/app/components/ModalDescargaPDF';
 
 const DAYS_SHORT = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const DAYS_MOBILE = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
@@ -111,6 +112,7 @@ export default function EventosPage() {
   const [showModalPlanificacion, setShowModalPlanificacion] = useState(false);
   const [planificacionActual, setPlanificacionActual] = useState<Planificacion | null>(null);
   const [loadingPlanificacion, setLoadingPlanificacion] = useState(false);
+  const [showModalDescarga, setShowModalDescarga] = useState(false);
 
   const showToast = (msg: string, type: 'success' | 'error') => {
     setToast({ msg, type });
@@ -168,10 +170,26 @@ export default function EventosPage() {
     setShowModalPlanificacion(true);
   }
 
+  async function handleAbrirDescarga() {
+    if (!selectedEvento?.planificacionId) return;
+    if (!planificacionActual) {
+      setLoadingPlanificacion(true);
+      try {
+        const p = await planificacionService.obtenerPlanificacion(selectedEvento.planificacionId);
+        setPlanificacionActual(p);
+      } catch {
+        showToast('Error al cargar la planificación', 'error');
+        return;
+      } finally {
+        setLoadingPlanificacion(false);
+      }
+    }
+    setShowModalDescarga(true);
+  }
+
   function handlePlanificacionGuardada(planificacion: Planificacion) {
     setShowModalPlanificacion(false);
     setPlanificacionActual(null);
-    // Actualizamos el evento seleccionado con el planificacionId
     if (selectedEvento && !selectedEvento.planificacionId) {
       const eventoActualizado = { ...selectedEvento, planificacionId: planificacion.id };
       setSelectedEvento(eventoActualizado);
@@ -302,7 +320,6 @@ export default function EventosPage() {
     </button>
   );
 
-  // Botones de planificación para el side panel
   const BotonesPlanificacion = () => {
     if (!selectedEvento) return null;
     const tienePlanificacion = !!selectedEvento.planificacionId;
@@ -314,13 +331,14 @@ export default function EventosPage() {
           {loadingPlanificacion ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : tienePlanificacion ? (
-            <><CheckCircle size={14} /> Ver Planificación</>
+            <><Pencil size={14} /> Editar Planificación</>
           ) : (
             <><ClipboardList size={14} /> Planificar Evento</>
           )}
         </button>
         {tienePlanificacion && (
           <button
+            onClick={handleAbrirDescarga}
             title="Descargar PDF"
             className="w-10 h-10 flex items-center justify-center rounded-xl border border-[#EBEBEB] text-[#6B7280] hover:bg-[#F9F9F9] hover:border-[#FFD4C2] hover:text-[#FF6B35] transition-all">
             <Download size={15} />
@@ -704,6 +722,15 @@ export default function EventosPage() {
             planificacionExistente={planificacionActual}
             onClose={() => { setShowModalPlanificacion(false); setPlanificacionActual(null); }}
             onGuardado={handlePlanificacionGuardada}
+          />
+        )}
+
+        {/* Modal Descarga PDF */}
+        {showModalDescarga && selectedEvento && planificacionActual && (
+          <ModalDescargaPDF
+            evento={selectedEvento}
+            planificacion={planificacionActual}
+            onClose={() => setShowModalDescarga(false)}
           />
         )}
 
