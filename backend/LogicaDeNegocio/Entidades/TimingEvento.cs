@@ -13,7 +13,7 @@ namespace LogicaDeNegocio.Entidades
     {
         public int Id { get; set; }
         [Required]
-        public int PlanificacionId { get; set; }
+        public int? PlanificacionId { get; set; }
         [ForeignKey(nameof(PlanificacionId))]
         public Planificacion? Planificacion { get; set; }
         [Required]

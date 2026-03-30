@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SalonEventos.API.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class PlanificacionController : ControllerBase
     {
         private readonly IAltaPlanificacion _altaPlanificacion;

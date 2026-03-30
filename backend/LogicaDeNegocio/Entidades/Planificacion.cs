@@ -1,4 +1,5 @@
-﻿using LogicaDeNegocio.Interfaces;
+﻿using LogicaDeNegocio.Exceptions;
+using LogicaDeNegocio.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -48,7 +49,22 @@ namespace LogicaDeNegocio.Entidades
 
         public void Validar()
         {
-            throw new NotImplementedException();
+            if (this.HoraLlegada == TimeSpan.Zero)
+            {
+                throw new PlanificacionException("Debe ingresar una hora de llegada válida.");
+            }
+
+            if (this.HoraSalida.HasValue)
+            {
+                if (this.HoraLlegada >= this.HoraSalida.Value)
+                {
+                    throw new PlanificacionException("La hora de llegada debe ser menor que la hora de salida.");
+                }
+            }
+            if (this.CantidadMesas <= 0)
+            {
+                throw new PlanificacionException("Debe ingresar la cantidad de mesas.");
+            }
         }
     }
 }

@@ -5,10 +5,12 @@ using LogicaDeAplicacion.CasosDeUso.CotizacionCU;
 using LogicaDeAplicacion.CasosDeUso.EventoCU;
 using LogicaDeAplicacion.CasosDeUso.PlanificacionCU;
 using LogicaDeAplicacion.CasosDeUso.ReunionCU;
+using LogicaDeAplicacion.CasosDeUso.TimingEventoCU;
 using LogicaDeAplicacion.InterfacesCasosDeUso.ICotizacion;
 using LogicaDeAplicacion.InterfacesCasosDeUso.IEvento;
 using LogicaDeAplicacion.InterfacesCasosDeUso.IPlanificacion;
 using LogicaDeAplicacion.InterfacesCasosDeUso.IReunion;
+using LogicaDeAplicacion.InterfacesCasosDeUso.ITimingEvento;
 using LogicaDeNegocio.InterfacesRepositorio;
 using Microsoft.EntityFrameworkCore;
 
@@ -60,6 +62,9 @@ namespace SalonEventos.API
             builder.Services.AddScoped<IAltaPlanificacion, AltaPlanificacionCU>();
             builder.Services.AddScoped<IEditarPlanificacion, EditarPlanificacionCU>();
             builder.Services.AddScoped<IObtenerPlanificacionPorId, ObtenerPlanificacionPorIdCU>();
+
+            //TimingEvento
+            builder.Services.AddScoped<IObtenerTimingsPorDefecto, ObtenerTimingsPorDefectoCU>();
 
             // Servicios
             builder.Services.AddControllers();

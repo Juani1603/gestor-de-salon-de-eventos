@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import {
   ChevronLeft, ChevronDown, ChevronRight, Plus, Calendar, X,
   Users, DollarSign, Star, Heart, Cake, Briefcase,
-  CheckCircle, AlertCircle, Trash2, AlertTriangle, ClipboardList, Eye
+  CheckCircle, AlertCircle, Trash2, AlertTriangle, ClipboardList, Download
 } from 'lucide-react';
 import { eventoService } from '@/app/services/eventoService';
 import { planificacionService } from '@/app/services/planificacionService';
@@ -314,11 +314,18 @@ export default function EventosPage() {
           {loadingPlanificacion ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : tienePlanificacion ? (
-            <><Eye size={14} /> Ver Planificación</>
+            <><CheckCircle size={14} /> Ver Planificación</>
           ) : (
             <><ClipboardList size={14} /> Planificar Evento</>
           )}
         </button>
+        {tienePlanificacion && (
+          <button
+            title="Descargar PDF"
+            className="w-10 h-10 flex items-center justify-center rounded-xl border border-[#EBEBEB] text-[#6B7280] hover:bg-[#F9F9F9] hover:border-[#FFD4C2] hover:text-[#FF6B35] transition-all">
+            <Download size={15} />
+          </button>
+        )}
       </div>
     );
   };

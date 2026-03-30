@@ -9,8 +9,10 @@ namespace LogicaDeAplicacion.DTOs
     public class TimingEventoDTO
     {
         public int Id { get; set; }
+        public int? PlanificacionId { get; set; }
         public string Momento { get; set; }
-        public string Hora { get; set; }
+        public string Hora { get; set; } 
         public int Orden { get; set; }
+
     }
 }
