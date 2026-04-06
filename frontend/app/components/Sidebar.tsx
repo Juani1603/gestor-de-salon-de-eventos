@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
+
 const menuItems = [
   { name: 'Dashboard', icon: Home, path: '/dashboard' },
   { name: 'Eventos', icon: Calendar, path: '/eventos' },
@@ -69,19 +70,21 @@ export default function Sidebar() {
         <div className="flex flex-col h-full p-6 ml-2">
           {/* Logo con animación de entrada */}
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-6"
-          >
-            <Image
-              src="/logo.svg"
-              alt="Salón Eventos Logo"
-              width={180}
-              height={50}
-              className="rounded-lg"
-            />
-          </motion.div>
+  initial={{ opacity: 0, y: -20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.1 }}
+  className="mb-6"
+>
+  <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+    <Image
+      src="/logo.svg"
+      alt="Salón Eventos Logo"
+      width={180}
+      height={50}
+      className="rounded-lg"
+    />
+  </Link>
+</motion.div>
 
           {/* Navigation con animación escalonada */}
           <nav className="space-y-1 flex-1">

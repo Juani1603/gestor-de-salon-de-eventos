@@ -16,6 +16,10 @@ const fadeUp = (delay = 0) => ({
   transition: { duration: 0.4, ease: 'easeOut' as const, delay },
 });
 
+const hoverUp = {
+  whileHover: { y: -3, transition: { type: 'spring' as const, stiffness: 300, damping: 20 } },
+};
+
 export default function DashboardPage() {
   const [eventoProximo, setEventoProximo] = useState<Evento | null>(null);
   const [eventosDelMes, setEventosDelMes] = useState<Evento[]>([]);
@@ -69,24 +73,20 @@ export default function DashboardPage() {
     ? Math.ceil((new Date(eventoProximo.fechaEvento).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : null;
 
-  // Cotizaciones sin evento asignado
   const cotizacionesPendientes = cotizaciones.filter(c => !c.eventoId).length;
-
-  // Reuniones del mes vigentes (desde hoy)
   const hoyCalendario = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const reunionesDelMesVigentes = reunionesDelMes.filter(r => new Date(r.fechaHora) >= hoyCalendario).length;
 
-  // Formateamos la próxima reunión
   const reunionProximaFormateada = reunionProxima
     ? (() => {
-      const fecha = new Date(reunionProxima.fechaHora);
-      const hoyStr = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-      const fechaStr = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()).getTime();
-      const esHoy = hoyStr === fechaStr;
-      const hora = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-      const diaLabel = esHoy ? 'Hoy' : fecha.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short' });
-      return { hora, diaLabel, esHoy };
-    })()
+        const fecha = new Date(reunionProxima.fechaHora);
+        const hoyStr = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const fechaStr = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()).getTime();
+        const esHoy = hoyStr === fechaStr;
+        const hora = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        const diaLabel = esHoy ? 'Hoy' : fecha.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short' });
+        return { hora, diaLabel, esHoy };
+      })()
     : null;
 
   return (
@@ -109,8 +109,8 @@ export default function DashboardPage() {
         {/* Card 1 — Próximo Evento */}
         <motion.div
           {...fadeUp(0.08)}
-          whileHover={{ y: -3, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
-          className="relative rounded-2xl overflow-hidden min-h-[200px] flex flex-col"
+          {...hoverUp}
+          className="relative rounded-2xl overflow-hidden min-h-[200px] flex flex-col cursor-default"
           style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}
         >
           <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full border border-white/10 pointer-events-none" />
@@ -126,7 +126,6 @@ export default function DashboardPage() {
                 </span>
               )}
             </div>
-
             {eventoProximo ? (
               <div className="flex-1 flex flex-col">
                 <p className="text-2xl font-bold text-white mb-1 leading-tight">{eventoProximo.nombreCliente}</p>
@@ -157,8 +156,8 @@ export default function DashboardPage() {
         {/* Card 2 — Próxima Reunión */}
         <motion.div
           {...fadeUp(0.14)}
-          whileHover={{ y: -3, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
-          className="bg-white border border-[#F0F0F0] rounded-2xl p-6 flex flex-col min-h-[200px] hover:border-[#FFD4C2] hover:shadow-md transition-all duration-200"
+          {...hoverUp}
+          className="bg-white border border-[#F0F0F0] rounded-2xl p-6 flex flex-col min-h-[200px] hover:border-[#FFD4C2] hover:shadow-md transition-colors duration-200 cursor-default"
         >
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-semibold uppercase tracking-widest text-[#9CA3AF]">Próxima Reunión</span>
@@ -168,7 +167,6 @@ export default function DashboardPage() {
               </span>
             )}
           </div>
-
           <div className="flex-1 flex flex-col">
             {reunionProxima ? (
               <>
@@ -192,7 +190,8 @@ export default function DashboardPage() {
         {/* Card 3 — Mini Calendario */}
         <motion.div
           {...fadeUp(0.20)}
-          className="bg-white border border-[#F0F0F0] rounded-2xl overflow-hidden min-h-[200px] hover:border-[#FFD4C2] hover:shadow-md transition-all duration-200 lg:col-span-1"
+          {...hoverUp}
+          className="bg-white border border-[#F0F0F0] rounded-2xl overflow-hidden min-h-[200px] hover:border-[#FFD4C2] hover:shadow-md transition-colors duration-200 cursor-default lg:col-span-1"
         >
           <MiniCalendar eventos={eventosDelMes} />
         </motion.div>
@@ -201,30 +200,15 @@ export default function DashboardPage() {
       {/* Stats row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
-          {
-            icon: <Calendar size={18} />,
-            value: eventosDelMes.length,
-            label: 'Eventos',
-            sub: 'este mes',
-          },
-          {
-            icon: <Clock size={18} />,
-            value: reunionesDelMesVigentes,
-            label: 'Reuniones',
-            sub: 'este mes',
-          },
-          {
-            icon: <FileText size={18} />,
-            value: cotizacionesPendientes,
-            label: 'Cotizaciones',
-            sub: 'sin evento asignado',
-          },
+          { icon: <Calendar size={18} />, value: eventosDelMes.length, label: 'Eventos', sub: 'este mes' },
+          { icon: <Clock size={18} />, value: reunionesDelMesVigentes, label: 'Reuniones', sub: 'este mes' },
+          { icon: <FileText size={18} />, value: cotizacionesPendientes, label: 'Cotizaciones', sub: 'sin evento asignado' },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
             {...fadeUp(0.28 + i * 0.06)}
-            whileHover={{ y: -2, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
-            className="bg-white border border-[#F0F0F0] rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-[#FFD4C2] hover:shadow-md transition-all duration-200"
+            {...hoverUp}
+            className="bg-white border border-[#F0F0F0] rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-[#FFD4C2] hover:shadow-md transition-colors duration-200 cursor-default"
           >
             <div className="w-12 h-12 rounded-xl bg-[#FFF4F0] flex items-center justify-center shrink-0 text-[#FF6B35]">
               {stat.icon}

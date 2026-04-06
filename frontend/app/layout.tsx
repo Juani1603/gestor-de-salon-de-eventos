@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Gestión de Eventos",
-  description: "Gestión de Eventos para Naranjo Amargo",
+  description: "Web App de Gestión de Eventos",
 };
 
 export default function RootLayout({
