@@ -2,7 +2,7 @@
 
 <img src="https://raw.githubusercontent.com/Juani1603/gestor-de-salon-de-eventos/main/frontend/public/logo-white-text.svg" alt="Salón Eventos Logo" width="240" />
 
-<br /><br />
+<br />
 
 **Aplicación web fullstack para la gestión integral de eventos, cotizaciones y reuniones.**
 
