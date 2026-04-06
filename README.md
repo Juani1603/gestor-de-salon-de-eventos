@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/Juani1603/gestor-de-salon-de-eventos/main/frontend/public/logo.svg" alt="Salón Eventos Logo" width="240" />
+<img src="https://raw.githubusercontent.com/Juani1603/gestor-de-salon-de-eventos/main/frontend/public/logo-white-text.svg" alt="Salón Eventos Logo" width="240" />
 
-<br /><br />
+<br />
 
 **Aplicación web fullstack para la gestión integral de eventos, cotizaciones y reuniones.**
 
@@ -56,7 +56,38 @@
 
 ## 🖼️ Capturas
 
-> *Próximamente*
+### Dashboard
+![Dashboard](docs/screenshots/dashboard.png)
+
+### Eventos
+**Calendario mensual**
+![Calendario](docs/screenshots/eventos-calendario.png)
+
+**Panel de detalle**
+![Panel de detalle](docs/screenshots/eventos-detalle.png)
+
+**Modal de nuevo evento**
+![Modal nuevo evento](docs/screenshots/eventos-modal-alta.png)
+
+**Modal de planificación**
+![Modal planificación](docs/screenshots/eventos-modal-planificacion.png)
+
+### Cotizaciones
+**Listado de cotizaciones**
+![Cotizaciones](docs/screenshots/cotizaciones.png)
+
+**Modal de nuevo evento desde cotización**
+![Modal evento desde cotización](docs/screenshots/cotizaciones-modal-evento.png)
+
+### Reuniones
+**Agenda de reuniones**
+![Reuniones](docs/screenshots/reuniones.png)
+
+**Modal de alta de reunión**
+![Modal reunión](docs/screenshots/reuniones-modal-alta.png)
+
+### PDF de Planificación
+![PDF](docs/screenshots/pdf-planificacion.png)
 
 ---
 
