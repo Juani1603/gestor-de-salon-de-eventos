@@ -63,33 +63,13 @@
 **Calendario mensual**
 ![Calendario](docs/screenshots/eventos-calendario.png)
 
-**Modal de nuevo evento**
-<div align="center">
-  <img src="docs/screenshots/eventos-modal-alta.png" width="480" />
-</div>
-
-**Modal de planificación**
-<div align="center">
-  <img src="docs/screenshots/eventos-modal-planificacion.png" width="480" />
-</div>
-
 ### Cotizaciones
 **Listado de cotizaciones**
 ![Cotizaciones](docs/screenshots/cotizaciones.png)
 
-**Modal de nuevo evento desde cotización**
-<div align="center">
-  <img src="docs/screenshots/cotizaciones-modal-evento.png" width="480" />
-</div>
-
 ### Reuniones
 **Agenda de reuniones**
 ![Reuniones](docs/screenshots/reuniones.png)
-
-**Modal de alta de reunión**
-<div align="center">
-  <img src="docs/screenshots/reuniones-modal-alta.png" width="480" />
-</div>
 
 ### PDF de Planificación
 ![PDF](docs/screenshots/pdf-planificacion.png)
