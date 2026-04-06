@@ -63,9 +63,6 @@
 **Calendario mensual**
 ![Calendario](docs/screenshots/eventos-calendario.png)
 
-**Panel de detalle**
-![Panel de detalle](docs/screenshots/eventos-detalle.png)
-
 **Modal de nuevo evento**
 ![Modal nuevo evento](docs/screenshots/eventos-modal-alta.png)
 
