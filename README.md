@@ -1,15 +1,14 @@
 <div align="center">
 
-# 🎉 Gestor de Salón de Eventos
+<img src="public/logo.svg" alt="Salón Eventos Logo" width="240" />
+
+<br /><br />
 
 **Aplicación web fullstack para la gestión integral de eventos, cotizaciones y reuniones.**
 
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![.NET](https://img.shields.io/badge/.NET-8-512BD4?style=flat-square&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
-[![SQL Server](https://img.shields.io/badge/SQL_Server-CC2927?style=flat-square&logo=microsoftsqlserver&logoColor=white)](https://www.microsoft.com/sql-server)
+<br />
+
+<img src="https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,dotnet,cs&theme=light" />
 
 </div>
 
@@ -61,28 +60,6 @@
 
 ---
 
-## 🛠️ Stack Tecnológico
-
-### Frontend
-| Tecnología | Uso |
-|---|---|
-| **Next.js 15** | Framework React con App Router |
-| **React 19** | Librería de UI |
-| **TypeScript** | Tipado estático |
-| **Tailwind CSS** | Estilos utilitarios |
-| **Framer Motion** | Animaciones |
-| **Lucide React** | Iconografía |
-| **Puppeteer** | Generación de PDFs |
-
-### Backend
-| Tecnología | Uso |
-|---|---|
-| **C# .NET 8** | API RESTful |
-| **Entity Framework Core 8** | ORM |
-| **SQL Server** | Base de datos relacional |
-
----
-
 ## 🏗️ Arquitectura
 
 El proyecto sigue una arquitectura en capas con separación clara de responsabilidades:
@@ -105,6 +82,28 @@ El proyecto sigue una arquitectura en capas con separación clara de responsabil
 - **Repositorio** — abstracción del acceso a datos, desacoplando la lógica de negocio de la persistencia
 - **Inyección de dependencias** — los casos de uso y repositorios se inyectan mediante interfaces, facilitando el testing y la extensibilidad
 - **DTO + Mapper** — transferencia de datos entre capas sin exponer entidades directamente
+
+---
+
+## 🛠️ Stack Tecnológico
+
+### Frontend
+| Tecnología | Uso |
+|---|---|
+| **Next.js 15** | Framework React con App Router |
+| **React 19** | Librería de UI |
+| **TypeScript** | Tipado estático |
+| **Tailwind CSS** | Estilos utilitarios |
+| **Framer Motion** | Animaciones |
+| **Lucide React** | Iconografía |
+| **Puppeteer** | Generación de PDFs |
+
+### Backend
+| Tecnología | Uso |
+|---|---|
+| **C# .NET 8** | API RESTful |
+| **Entity Framework Core 8** | ORM |
+| **SQL Server** | Base de datos relacional |
 
 ---
 
