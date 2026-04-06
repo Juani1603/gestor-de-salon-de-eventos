@@ -1,0 +1,11 @@
+<svg width="100%" viewBox="0 0 260 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    
+  </defs>
+
+  <text x="20" y="54" font-family="'DM Sans', 'Helvetica Neue', sans-serif" font-size="36" font-weight="700" fill="white" letter-spacing="-1" style="fill:rgb(255, 255, 255);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;DM Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif;font-size:36px;font-weight:700;text-anchor:start;dominant-baseline:auto">Salon</text>
+
+  <text x="20" y="90" font-family="'DM Sans', 'Helvetica Neue', sans-serif" font-size="36" font-weight="300" fill="white" letter-spacing="-1" style="fill:rgb(255, 255, 255);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;DM Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif;font-size:36px;font-weight:300;text-anchor:start;dominant-baseline:auto">Eventos</text>
+
+  <circle cx="200" cy="60" r="36" fill="none" stroke="white" stroke-width="2.5" style="fill:none;stroke:rgb(255, 255, 255);color:rgb(255, 255, 255);stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+</svg>

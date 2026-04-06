@@ -295,7 +295,7 @@ export default function PlanificacionPDF({ evento, planificacion }: Planificacio
         {/* ── Header ── */}
         <View style={s.header}>
           <View style={s.headerRow}>
-            <Image src="/logo.png" style={s.logo} />
+            <Image src="/logo-white.svg" style={s.logo} />
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={s.fechaLabel}>Fecha del evento</Text>
               <Text style={s.fechaValor}>

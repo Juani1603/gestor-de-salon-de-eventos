@@ -72,13 +72,13 @@ export default function Sidebar() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mb-8"
+            className="mb-6"
           >
             <Image
-              src="/logo.png"
+              src="/logo.svg"
               alt="Salón Eventos Logo"
-              width={150}
-              height={40}
+              width={180}
+              height={50}
               className="rounded-lg"
             />
           </motion.div>
