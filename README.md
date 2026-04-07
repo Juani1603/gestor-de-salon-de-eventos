@@ -123,6 +123,13 @@ El proyecto sigue una arquitectura en capas con separación clara de responsabil
 
 ---
 
+## 🔌 API Endpoints
+
+La documentación completa de la API está disponible en [`API.md`](API.md).
+También podés explorarla desde Swagger en `http://localhost:5013/swagger` con el backend corriendo.
+
+---
+
 ## 🚀 Instalación y uso local
 
 ### Prerequisitos
@@ -172,9 +179,11 @@ dotnet run
 
 ---
 
-## 📐 Modelo de datos
+## 📐 Diagrama UML
 
-> *Diagrama UML próximamente*
+<div align="center">
+  <img src="docs/uml.png" alt="Diagrama UML" width="800" />
+</div>
 
 ---
 
