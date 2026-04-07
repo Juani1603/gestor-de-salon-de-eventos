@@ -54,6 +54,12 @@
 
 ---
 
+## 📐 Requerimientos
+
+La especificación completa de requerimientos funcionales y no funcionales está documentada en [`REQUERIMIENTOS.md`](REQUERIMIENTOS.md).
+
+---
+
 ## 🖼️ Capturas
 
 ### Dashboard
