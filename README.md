@@ -172,9 +172,11 @@ dotnet run
 
 ---
 
-## 📐 Modelo de datos
+## 📐 Diagrama UML
 
-> *Diagrama UML próximamente*
+<div align="center">
+  <img src="docs/uml.png" alt="Diagrama UML" width="800" />
+</div>
 
 ---
 
